@@ -30,7 +30,7 @@ function MobileNavbar() {
 
   return (
     <div className="block border-separate bg-background md:hidden">
-      <nav className="container flex items-center justify-between px-8">
+      <nav className="container flex items-center justify-between">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button variant={"ghost"} size={"icon"}>
