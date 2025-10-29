@@ -32,7 +32,9 @@ function StatsCards({ from, to, userSettings }: Props) {
   const income = statsQuery.data?.income || 0;
   const expense = statsQuery.data?.expense || 0;
 
-  const balance = income - expense;
+  // Calculate balance including initial balance
+  const netChange = income - expense;
+  const balance = netChange + userSettings.initialBalance;
 
   return (
     <div className="relative flex w-full flex-wrap gap-2 md:flex-nowrap">
@@ -62,7 +64,7 @@ function StatsCards({ from, to, userSettings }: Props) {
         <StatCard
           formatter={formatter}
           value={balance}
-          title="Balance"
+          title="Current Balance"
           icon={
             <Wallet className="h-12 w-12 items-center rounded-lg p-2 text-violet-500 bg-violet-400/10" />
           }

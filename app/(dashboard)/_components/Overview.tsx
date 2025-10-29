@@ -2,6 +2,11 @@
 
 import CategoriesStats from "@/app/(dashboard)/_components/CategoriesStats";
 import StatsCards from "@/app/(dashboard)/_components/StatsCards";
+import SavingsCard from "@/app/(dashboard)/_components/SavingsCard";
+import BudgetHealthScore from "@/app/(dashboard)/_components/BudgetHealthScore";
+import TopCategoriesCard from "@/app/(dashboard)/_components/TopCategoriesCard";
+import MonthlyComparisonChart from "@/app/(dashboard)/_components/MonthlyComparisonChart";
+import SpendingTrendChart from "@/app/(dashboard)/_components/SpendingTrendChart";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/constants";
 import { UserSettings } from "@prisma/client";
@@ -11,7 +16,7 @@ import { toast } from "sonner";
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: startOfYear(new Date()),
+    from: startOfMonth(new Date()),
     to: new Date(),
   });
 
@@ -41,18 +46,47 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
           />
         </div>
       </div>
-      <div className="container flex w-full flex-col gap-2">
+      <div className="container flex w-full flex-col gap-4">
+        {/* Main Stats Row */}
         <StatsCards
           userSettings={userSettings}
           from={dateRange.from}
           to={dateRange.to}
         />
 
+        {/* Savings and Health Score Row */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <SavingsCard
+            userSettings={userSettings}
+            from={dateRange.from}
+            to={dateRange.to}
+          />
+          <BudgetHealthScore
+            userSettings={userSettings}
+            from={dateRange.from}
+            to={dateRange.to}
+          />
+        </div>
+
+        {/* Monthly Comparison */}
+        <MonthlyComparisonChart userSettings={userSettings} />
+
+        {/* Categories Breakdown */}
         <CategoriesStats
           userSettings={userSettings}
           from={dateRange.from}
           to={dateRange.to}
         />
+
+        {/* Top Categories */}
+        <TopCategoriesCard
+          userSettings={userSettings}
+          from={dateRange.from}
+          to={dateRange.to}
+        />
+
+        {/* Spending Trend */}
+        <SpendingTrendChart userSettings={userSettings} />
       </div>
     </>
   );

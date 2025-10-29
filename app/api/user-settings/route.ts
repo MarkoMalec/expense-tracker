@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       data: {
         userId: user.id,
         currency: "USD",
+        initialBalance: 0,
       },
     });
   }

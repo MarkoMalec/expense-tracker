@@ -2,6 +2,7 @@
 
 import CreateCategoryDialog from "@/app/(dashboard)/_components/CreateCategoryDialog";
 import DeleteCategoryDialog from "@/app/(dashboard)/_components/DeleteCategoryDialog";
+import InitialBalanceDialog from "@/app/(dashboard)/_components/InitialBalanceDialog";
 import { CurrencyComboBox } from "@/components/CurrencyComboBox";
 import SkeletonWrapper from "@/components/SkeletonWrapper";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Category } from "@prisma/client";
+import { Category, UserSettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   Pen,
@@ -28,6 +29,11 @@ import React from "react";
 import EditCategoryDialog from "../_components/EditCategoryDialog";
 
 function page() {
+  const userSettings = useQuery<UserSettings>({
+    queryKey: ["userSettings"],
+    queryFn: () => fetch("/api/user-settings").then((res) => res.json()),
+  });
+
   return (
     <>
       {/* HEADER */}
@@ -54,6 +60,22 @@ function page() {
             <CurrencyComboBox />
           </CardContent>
         </Card>
+        <SkeletonWrapper isLoading={userSettings.isLoading}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Initial Balance</CardTitle>
+              <CardDescription>
+                Set your starting balance. This won't count as income in your
+                statistics.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userSettings.data && (
+                <InitialBalanceDialog userSettings={userSettings.data} />
+              )}
+            </CardContent>
+          </Card>
+        </SkeletonWrapper>
         <CategoryList type="income" />
         <CategoryList type="expense" />
       </div>

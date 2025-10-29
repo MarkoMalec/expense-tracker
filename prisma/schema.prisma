@@ -15,8 +15,10 @@ datasource db {
 }
 
 model UserSettings {
-  userId   String @id
-  currency String
+  userId         String   @id
+  currency       String
+  initialBalance Float    @default(0)
+  createdAt      DateTime @default(now())
 }
 
 model Category {

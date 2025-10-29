@@ -8,10 +8,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import WizardForm from "@/app/wizard/_components/WizardForm";
 
 async function WizardPage() {
   const user = await currentUser();
@@ -33,24 +36,7 @@ async function WizardPage() {
         </h3>
       </div>
       <Separator />
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Currency</CardTitle>
-          <CardDescription>
-            Set your default currency for transactions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CurrencyComboBox />
-        </CardContent>
-      </Card>
-      <Separator />
-      <Button className="w-full" asChild>
-        <Link href={"/"}>I&apos;m done! Take me to the dashboard</Link>
-      </Button>
-      <div className="mt-8">
-        <Logo />
-      </div>
+      <WizardForm />
     </div>
   );
 }
