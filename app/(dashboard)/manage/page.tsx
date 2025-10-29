@@ -3,6 +3,7 @@
 import CreateCategoryDialog from "@/app/(dashboard)/_components/CreateCategoryDialog";
 import DeleteCategoryDialog from "@/app/(dashboard)/_components/DeleteCategoryDialog";
 import InitialBalanceDialog from "@/app/(dashboard)/_components/InitialBalanceDialog";
+import BillingCycleDialog from "@/app/(dashboard)/_components/BillingCycleDialog";
 import { CurrencyComboBox } from "@/components/CurrencyComboBox";
 import SkeletonWrapper from "@/components/SkeletonWrapper";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,22 @@ function page() {
             <CardContent>
               {userSettings.data && (
                 <InitialBalanceDialog userSettings={userSettings.data} />
+              )}
+            </CardContent>
+          </Card>
+        </SkeletonWrapper>
+        <SkeletonWrapper isLoading={userSettings.isLoading}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing Cycle</CardTitle>
+              <CardDescription>
+                Set when your billing cycle starts (e.g., when you receive your
+                salary) and choose your preferred view mode.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userSettings.data && (
+                <BillingCycleDialog userSettings={userSettings.data} />
               )}
             </CardContent>
           </Card>

@@ -8,23 +8,83 @@ import TopCategoriesCard from "@/app/(dashboard)/_components/TopCategoriesCard";
 import MonthlyComparisonChart from "@/app/(dashboard)/_components/MonthlyComparisonChart";
 import SpendingTrendChart from "@/app/(dashboard)/_components/SpendingTrendChart";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Button } from "@/components/ui/button";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/constants";
+import { getBillingPeriod, getBillingPeriodLabel } from "@/lib/helpers";
 import { UserSettings } from "@prisma/client";
-import { differenceInDays, startOfMonth, startOfYear } from "date-fns";
-import React, { useState } from "react";
+import { differenceInDays, endOfMonth, startOfMonth } from "date-fns";
+import { Calendar, CalendarRange } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: startOfMonth(new Date()),
-    to: new Date(),
-  });
+  const [viewMode, setViewMode] = useState<"calendar" | "billing">(
+    userSettings.preferredView as "calendar" | "billing"
+  );
+  
+  // Initialize date range based on preferred view
+  const getInitialDateRange = () => {
+    if (userSettings.preferredView === "billing") {
+      return getBillingPeriod(userSettings.billingCycleDay);
+    } else {
+      return {
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date()),
+      };
+    }
+  };
+
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(
+    getInitialDateRange()
+  );
+
+  // Update date range when view mode changes
+  const handleViewModeToggle = () => {
+    const newMode = viewMode === "calendar" ? "billing" : "calendar";
+    setViewMode(newMode);
+
+    if (newMode === "billing") {
+      const billingPeriod = getBillingPeriod(userSettings.billingCycleDay);
+      setDateRange(billingPeriod);
+    } else {
+      setDateRange({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date()),
+      });
+    }
+  };
+
+  const periodLabel =
+    viewMode === "billing"
+      ? getBillingPeriodLabel(userSettings.billingCycleDay)
+      : "Calendar Month";
 
   return (
     <>
       <div className="container flex flex-wrap items-end justify-between gap-2 py-6">
-        <h2 className="text-3xl font-bold">Overview</h2>
-        <div className="flex items-center gap-3">
+        <div>
+          <h2 className="text-3xl font-bold">Overview</h2>
+          <p className="text-sm text-muted-foreground mt-1">{periodLabel}</p>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewModeToggle}
+            className="gap-2"
+          >
+            {viewMode === "calendar" ? (
+              <>
+                <CalendarRange className="h-4 w-4" />
+                Switch to Billing Cycle
+              </>
+            ) : (
+              <>
+                <Calendar className="h-4 w-4" />
+                Switch to Calendar
+              </>
+            )}
+          </Button>
           <DateRangePicker
             initialDateFrom={dateRange.from}
             initialDateTo={dateRange.to}
@@ -69,7 +129,10 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
         </div>
 
         {/* Monthly Comparison */}
-        <MonthlyComparisonChart userSettings={userSettings} />
+        <MonthlyComparisonChart 
+          userSettings={userSettings}
+          viewMode={viewMode}
+        />
 
         {/* Categories Breakdown */}
         <CategoriesStats

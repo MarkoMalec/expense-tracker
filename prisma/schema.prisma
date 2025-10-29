@@ -15,10 +15,12 @@ datasource db {
 }
 
 model UserSettings {
-  userId         String   @id
-  currency       String
-  initialBalance Float    @default(0)
-  createdAt      DateTime @default(now())
+  userId          String   @id
+  currency        String
+  initialBalance  Float    @default(0)
+  billingCycleDay Int      @default(1) // Day of month when billing cycle starts (1-28)
+  preferredView   String   @default("calendar") // "calendar" or "billing"
+  createdAt       DateTime @default(now())
 }
 
 model Category {

@@ -2,7 +2,7 @@
 
 import SkeletonWrapper from "@/components/SkeletonWrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GetFormatterForCurrency } from "@/lib/helpers";
+import { GetFormatterForCurrency, getBillingPeriod, getPreviousBillingPeriod } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { UserSettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import CountUp from "react-countup";
 
 interface Props {
   userSettings: UserSettings;
+  viewMode?: "calendar" | "billing";
 }
 
 interface MonthlyStats {
@@ -21,26 +22,48 @@ interface MonthlyStats {
   savings: number;
 }
 
-function MonthlyComparisonChart({ userSettings }: Props) {
+function MonthlyComparisonChart({ userSettings, viewMode = "calendar" }: Props) {
   const now = new Date();
-  const currentMonthStart = startOfMonth(now);
-  const currentMonthEnd = endOfMonth(now);
-  const lastMonthStart = startOfMonth(subMonths(now, 1));
-  const lastMonthEnd = endOfMonth(subMonths(now, 1));
+  
+  // Get date ranges based on view mode
+  const { currentStart, currentEnd, previousStart, previousEnd, currentLabel, previousLabel } = useMemo(() => {
+    if (viewMode === "billing") {
+      const current = getBillingPeriod(userSettings.billingCycleDay);
+      const previous = getPreviousBillingPeriod(userSettings.billingCycleDay);
+      
+      return {
+        currentStart: current.from,
+        currentEnd: current.to,
+        previousStart: previous.from,
+        previousEnd: previous.to,
+        currentLabel: "Current Billing Period",
+        previousLabel: "Previous Billing Period",
+      };
+    } else {
+      return {
+        currentStart: startOfMonth(now),
+        currentEnd: endOfMonth(now),
+        previousStart: startOfMonth(subMonths(now, 1)),
+        previousEnd: endOfMonth(subMonths(now, 1)),
+        currentLabel: now.toLocaleDateString("default", { month: "long", year: "numeric" }),
+        previousLabel: subMonths(now, 1).toLocaleDateString("default", { month: "long", year: "numeric" }),
+      };
+    }
+  }, [viewMode, userSettings.billingCycleDay, now]);
 
   const currentMonthQuery = useQuery({
-    queryKey: ["comparison", "current", currentMonthStart, currentMonthEnd],
+    queryKey: ["comparison", "current", currentStart, currentEnd, viewMode],
     queryFn: () =>
       fetch(
-        `/api/stats/balance?from=${currentMonthStart.toISOString()}&to=${currentMonthEnd.toISOString()}`
+        `/api/stats/balance?from=${currentStart.toISOString()}&to=${currentEnd.toISOString()}`
       ).then((res) => res.json()),
   });
 
   const lastMonthQuery = useQuery({
-    queryKey: ["comparison", "last", lastMonthStart, lastMonthEnd],
+    queryKey: ["comparison", "last", previousStart, previousEnd, viewMode],
     queryFn: () =>
       fetch(
-        `/api/stats/balance?from=${lastMonthStart.toISOString()}&to=${lastMonthEnd.toISOString()}`
+        `/api/stats/balance?from=${previousStart.toISOString()}&to=${previousEnd.toISOString()}`
       ).then((res) => res.json()),
   });
 
@@ -77,13 +100,9 @@ function MonthlyComparisonChart({ userSettings }: Props) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Month-over-Month Comparison</span>
+            <span>Period Comparison</span>
             <div className="text-sm font-normal text-muted-foreground">
-              {now.toLocaleDateString("default", { month: "long", year: "numeric" })} vs{" "}
-              {subMonths(now, 1).toLocaleDateString("default", {
-                month: "long",
-                year: "numeric",
-              })}
+              {currentLabel} vs {previousLabel}
             </div>
           </CardTitle>
         </CardHeader>

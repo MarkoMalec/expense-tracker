@@ -2,6 +2,7 @@ import CreateTransactionDialog from "@/app/(dashboard)/_components/CreateTransac
 import History from "@/app/(dashboard)/_components/History";
 import Overview from "@/app/(dashboard)/_components/Overview";
 import InitialBalanceDialog from "@/app/(dashboard)/_components/InitialBalanceDialog";
+import BillingCycleDialog from "@/app/(dashboard)/_components/BillingCycleDialog";
 import { Button } from "@/components/ui/button";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
@@ -33,6 +34,7 @@ async function page() {
 
           <div className="flex items-center gap-3 flex-wrap">
             {/* <InitialBalanceDialog userSettings={userSettings} /> */}
+            {/* <BillingCycleDialog userSettings={userSettings} /> */}
             
             <CreateTransactionDialog
               trigger={
