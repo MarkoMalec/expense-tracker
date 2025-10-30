@@ -14,21 +14,13 @@ export function getAITools(userId: string) {
       description: "Get total spending for a specific category or categories. Useful for questions like 'How much did I spend on X?'",
       inputSchema: z.object({
         categoryName: z.string().describe("The category name to search for (case-insensitive, partial match)"),
-        startDate: z.string().optional().describe("Start date in ISO format (YYYY-MM-DD). Defaults to start of current month"),
-        endDate: z.string().optional().describe("End date in ISO format (YYYY-MM-DD). Defaults to end of current month"),
       }),
       execute: async (args) => {
-        const start = args.startDate ? new Date(args.startDate) : startOfMonth(new Date());
-        const end = args.endDate ? new Date(args.endDate) : endOfMonth(new Date());
 
         const transactions = await prisma.transaction.findMany({
           where: {
             userId,
             type: "expense",
-            date: {
-              gte: start,
-              lte: end,
-            },
             category: {
               contains: args.categoryName,
             },
@@ -49,7 +41,6 @@ export function getAITools(userId: string) {
           total,
           count,
           transactions: transactions.slice(0, 5), // Return top 5 transactions as examples
-          period: { start: start.toISOString(), end: end.toISOString() },
         };
       },
     }),
@@ -189,7 +180,7 @@ export function getAITools(userId: string) {
 
     // Tool: Get savings recommendations
     getSavingsRecommendations: tool({
-      description: "Analyze spending patterns and suggest categories where the user could cut expenses to improve savings.",
+      description: "Analyze spending patterns and suggest categories where the user could cut expenses to improve savings. It is required to check descriptions of each category to provide more tailored advice.",
       inputSchema: z.object({
         monthsToAnalyze: z.number().default(3).describe("Number of months to analyze for patterns"),
       }),
@@ -209,6 +200,7 @@ export function getAITools(userId: string) {
           select: {
             amount: true,
             category: true,
+            description: true,
           },
         });
 
@@ -217,6 +209,11 @@ export function getAITools(userId: string) {
           acc[t.category] = (acc[t.category] || 0) + t.amount;
           return acc;
         }, {} as Record<string, number>);
+
+        const categoryDescriptions = transactions.reduce((acc, t) => {
+          acc[t.category] = t.description;
+          return acc;
+        }, {} as Record<string, string>);
 
         // Calculate average per month
         const categoryAverages = Object.entries(categoryTotals).map(([category, total]) => ({
@@ -230,6 +227,7 @@ export function getAITools(userId: string) {
 
         return {
           topSpendingCategories: categoryAverages.slice(0, 5),
+          categoryDescriptions,
           analysisPeriod: {
             months: monthsToAnalyze,
             start: start.toISOString(),

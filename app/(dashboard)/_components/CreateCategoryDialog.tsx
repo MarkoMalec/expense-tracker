@@ -68,6 +68,7 @@ function CreateCategoryDialog({ type, successCallback, trigger }: Props) {
         name: "",
         icon: "",
         type,
+        description: "",
       });
 
       toast.success(`Category ${data.name} created successfully 🎉`, {
@@ -145,6 +146,26 @@ function CreateCategoryDialog({ type, successCallback, trigger }: Props) {
                   </FormControl>
                   <FormDescription>
                     This is how your category will appear in the app
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="A brief description of the category (optional)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This helps you remember the purpose of this category. {" "}
+                    <strong>But also it helps AI tools to better understand your categories.</strong>
                   </FormDescription>
                 </FormItem>
               )}

@@ -58,6 +58,7 @@ function EditCategoryDialog({ category, successCallback, trigger }: Props) {
       icon: category.icon,
       type: category.type as TransactionType,
       originalName: category.name,
+      description: category.description || "",
     },
   });
 
@@ -144,6 +145,26 @@ function EditCategoryDialog({ category, successCallback, trigger }: Props) {
                   </FormControl>
                   <FormDescription>
                     This is how your category will appear in the app
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Description (optional)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This helps you remember the purpose of this category. {" "}
+                    <strong>But also it helps AI tools to better understand your categories.</strong>
                   </FormDescription>
                 </FormItem>
               )}

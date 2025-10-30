@@ -2,6 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages } from "ai";
 import { currentUser } from "@clerk/nextjs/server";
 import { getAITools } from "@/lib/ai/tools";
+import { SYSTEM_PROMPT } from "@/lib/ai/config";
 
 // Use Node.js runtime instead of Edge to support Prisma Client
 export const runtime = "nodejs";
@@ -23,13 +24,8 @@ export async function POST(req: Request) {
     const tools = await getAITools(user.id);
 
     const result = await streamText({
-      model: openai("gpt-4-turbo"),
-      system: `You are a helpful financial assistant for an expense tracking application. 
-      You help users understand their spending patterns, provide insights, and answer questions about their transactions.
-      Be concise, friendly, and provide actionable advice.
-      When analyzing expenses, always consider the date ranges and provide specific numbers.
-      Format currency amounts properly based on the user's settings.
-      When the user asks about specific categories (like "cigarettes"), search for similar category names.`,
+      model: openai("gpt-4o-mini"),
+      system: SYSTEM_PROMPT,
       messages: convertToModelMessages(messages),
       tools,
     });

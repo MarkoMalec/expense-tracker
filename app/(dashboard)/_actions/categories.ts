@@ -23,13 +23,14 @@ export async function CreateCategory(form: CreateCategorySchemaType) {
     redirect("/sign-in");
   }
 
-  const { name, icon, type } = parsedBody.data;
+  const { name, icon, type, description } = parsedBody.data;
   return await prisma.category.create({
     data: {
       userId: user.id,
       name,
       icon,
       type,
+      description,
     },
   });
 }
@@ -67,7 +68,7 @@ export async function UpdateCategory(form: UpdateCategorySchemaType) {
     redirect("/sign-in");
   }
 
-  const { name, icon, type, originalName } = parsedBody.data;
+  const { name, icon, type, originalName, description } = parsedBody.data;
   return await prisma.category.update({
     where: {
       name_userId_type: {
@@ -79,6 +80,7 @@ export async function UpdateCategory(form: UpdateCategorySchemaType) {
     data: {
       name,
       icon,
+      description,
     },
   });
 }

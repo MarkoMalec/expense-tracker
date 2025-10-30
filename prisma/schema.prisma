@@ -30,6 +30,7 @@ model Category {
   userId    String
   icon      String
   type      String   @default("income")
+  description String?
 
   @@unique([name, userId, type])
 }
