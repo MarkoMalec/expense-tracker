@@ -106,14 +106,12 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
         </div>
       </div>
       <div className="container flex w-full flex-col gap-4">
-        {/* Main Stats Row */}
         <StatsCards
           userSettings={userSettings}
           from={dateRange.from}
           to={dateRange.to}
         />
 
-        {/* Savings and Health Score Row */}
         <div className="grid gap-4 md:grid-cols-2">
           <SavingsCard
             userSettings={userSettings}
@@ -127,27 +125,23 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
           />
         </div>
 
-        {/* Monthly Comparison */}
         <MonthlyComparisonChart 
           userSettings={userSettings}
           viewMode={viewMode}
         />
 
-        {/* Categories Breakdown */}
         <CategoriesStats
           userSettings={userSettings}
           from={dateRange.from}
           to={dateRange.to}
         />
 
-        {/* Top Categories */}
         <TopCategoriesCard
           userSettings={userSettings}
           from={dateRange.from}
           to={dateRange.to}
         />
 
-        {/* Spending Trend */}
         <SpendingTrendChart userSettings={userSettings} />
       </div>
     </>
