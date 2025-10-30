@@ -38,7 +38,6 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
     getInitialDateRange()
   );
 
-  // Update date range when view mode changes
   const handleViewModeToggle = () => {
     const newMode = viewMode === "calendar" ? "billing" : "calendar";
     setViewMode(newMode);
