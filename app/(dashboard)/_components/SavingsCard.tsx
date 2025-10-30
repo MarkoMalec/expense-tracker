@@ -9,7 +9,13 @@ import { DateToUTCDate, GetFormatterForCurrency } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { UserSettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { PiggyBank, TrendingDown, TrendingUp, Target, AlertCircle } from "lucide-react";
+import {
+  PiggyBank,
+  TrendingDown,
+  TrendingUp,
+  Target,
+  AlertCircle,
+} from "lucide-react";
 import React, { useMemo } from "react";
 import CountUp from "react-countup";
 
@@ -38,7 +44,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
   const savingsRate = income > 0 ? (savings / income) * 100 : 0;
 
   const isPositive = savings >= 0;
-  
+
   // Savings goal calculations
   const hasGoal = userSettings.savingsGoal > 0;
   // Budget = Income - Goal (how much you can spend to save the goal)
@@ -48,7 +54,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
   // How much you can still spend
   const canStillSpend = spendingBudget - alreadySpent;
   // Progress = how much of your budget you've used
-  const budgetUsedPercent = spendingBudget > 0 ? (alreadySpent / spendingBudget) * 100 : 0;
+  const budgetUsedPercent =
+    spendingBudget > 0 ? (alreadySpent / spendingBudget) * 100 : 0;
   const isOverBudget = alreadySpent > spendingBudget;
   // Projected savings if you stop spending now
   const projectedSavings = income - expense;
@@ -56,7 +63,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
   return (
     <SkeletonWrapper isLoading={statsQuery.isFetching}>
       <Card className="flex h-full w-full flex-col p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start flex-col justify-between gap-3 mb-4 md:flex-row md:items-center">
           <div className="flex items-center gap-2">
             <div
               className={cn(
@@ -98,63 +105,80 @@ function SavingsCard({ from, to, userSettings }: Props) {
                 {formatter.format(spendingBudget)}
               </span>
             </div>
-            <Progress 
-              value={Math.min(budgetUsedPercent, 100)} 
+            <Progress
+              value={Math.min(budgetUsedPercent, 100)}
               className={cn("h-2", isOverBudget && "bg-red-200")}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>
-                {isOverBudget 
-                  ? "⚠️ Over budget!" 
+                {isOverBudget
+                  ? "⚠️ Over budget!"
                   : `${budgetUsedPercent.toFixed(0)}% used`}
               </span>
-              <span>
-                {formatter.format(alreadySpent)} spent
-              </span>
+              <span>{formatter.format(alreadySpent)} spent</span>
             </div>
           </div>
         )}
 
         {/* Spending Allowance */}
         {hasGoal && income > 0 && (
-          <div className={cn(
-            "mb-4 rounded-lg p-4 border",
-            isOverBudget 
-              ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900"
-              : "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
-          )}>
+          <div
+            className={cn(
+              "mb-4 rounded-lg p-4 border",
+              isOverBudget
+                ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900"
+                : "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
+            )}
+          >
             <div className="flex items-start gap-3">
-              <AlertCircle className={cn(
-                "h-5 w-5 mt-0.5 flex-shrink-0",
-                isOverBudget ? "text-red-600" : "text-blue-600"
-              )} />
+              <AlertCircle
+                className={cn(
+                  "h-5 w-5 mt-0.5 flex-shrink-0",
+                  isOverBudget ? "text-red-600" : "text-blue-600"
+                )}
+              />
               <div className="flex-1">
-                <p className={cn(
-                  "text-sm font-semibold mb-1",
-                  isOverBudget 
-                    ? "text-red-900 dark:text-red-100" 
-                    : "text-blue-900 dark:text-blue-100"
-                )}>
+                <p
+                  className={cn(
+                    "text-sm font-semibold mb-1",
+                    isOverBudget
+                      ? "text-red-900 dark:text-red-100"
+                      : "text-blue-900 dark:text-blue-100"
+                  )}
+                >
                   {isOverBudget ? "Over Budget!" : "You Can Still Spend"}
                 </p>
-                <p className={cn(
-                  "text-2xl font-bold mb-2",
-                  isOverBudget 
-                    ? "text-red-700 dark:text-red-300" 
-                    : "text-blue-700 dark:text-blue-300"
-                )}>
+                <p
+                  className={cn(
+                    "text-2xl font-bold mb-2",
+                    isOverBudget
+                      ? "text-red-700 dark:text-red-300"
+                      : "text-blue-700 dark:text-blue-300"
+                  )}
+                >
                   {formatter.format(Math.abs(canStillSpend))}
                 </p>
-                <p className={cn(
-                  "text-xs",
-                  isOverBudget 
-                    ? "text-red-700 dark:text-red-300" 
-                    : "text-blue-700 dark:text-blue-300"
-                )}>
-                  {isOverBudget 
-                    ? `You've overspent by ${formatter.format(Math.abs(canStillSpend))}. Your projected savings: ${formatter.format(projectedSavings)} (Goal: ${formatter.format(userSettings.savingsGoal)})`
-                    : `Income: ${formatter.format(income)} - Goal: ${formatter.format(userSettings.savingsGoal)} = Budget: ${formatter.format(spendingBudget)}. Already spent: ${formatter.format(alreadySpent)}.`
-                  }
+                <p
+                  className={cn(
+                    "text-xs",
+                    isOverBudget
+                      ? "text-red-700 dark:text-red-300"
+                      : "text-blue-700 dark:text-blue-300"
+                  )}
+                >
+                  {isOverBudget
+                    ? `You've overspent by ${formatter.format(
+                        Math.abs(canStillSpend)
+                      )}. Your projected savings: ${formatter.format(
+                        projectedSavings
+                      )} (Goal: ${formatter.format(userSettings.savingsGoal)})`
+                    : `Income: ${formatter.format(
+                        income
+                      )} - Goal: ${formatter.format(
+                        userSettings.savingsGoal
+                      )} = Budget: ${formatter.format(
+                        spendingBudget
+                      )}. Already spent: ${formatter.format(alreadySpent)}.`}
                 </p>
               </div>
             </div>
@@ -175,11 +199,15 @@ function SavingsCard({ from, to, userSettings }: Props) {
             </span>
           </div>
           <div className="flex justify-between text-sm pt-2 border-t">
-            <span className="text-muted-foreground font-medium">Savings Rate</span>
-            <span className={cn(
-              "font-semibold",
-              isPositive ? "text-emerald-600" : "text-red-600"
-            )}>
+            <span className="text-muted-foreground font-medium">
+              Savings Rate
+            </span>
+            <span
+              className={cn(
+                "font-semibold",
+                isPositive ? "text-emerald-600" : "text-red-600"
+              )}
+            >
               {savingsRate.toFixed(1)}%
             </span>
           </div>
@@ -188,7 +216,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
         {!hasGoal && isPositive && (
           <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-3 border border-blue-200 dark:border-blue-900">
             <p className="text-xs text-blue-700 dark:text-blue-300">
-              💡 Set a savings goal to see your spending budget and track your financial progress!
+              💡 Set a savings goal to see your spending budget and track your
+              financial progress!
             </p>
           </div>
         )}
@@ -196,7 +225,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
         {hasGoal && projectedSavings >= userSettings.savingsGoal && (
           <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3 border border-emerald-200 dark:border-emerald-900">
             <p className="text-xs text-emerald-700 dark:text-emerald-300">
-              🎉 On track to save {formatter.format(userSettings.savingsGoal)}! Current projected savings: {formatter.format(projectedSavings)}
+              🎉 On track to save {formatter.format(userSettings.savingsGoal)}!
+              Current projected savings: {formatter.format(projectedSavings)}
             </p>
           </div>
         )}
