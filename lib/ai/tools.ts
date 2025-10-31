@@ -36,8 +36,24 @@ export function getAITools(userId: string) {
         const total = transactions.reduce((sum, t) => sum + t.amount, 0);
         const count = transactions.length;
 
+        // Get category description
+        const category = await prisma.category.findFirst({
+          where: {
+            userId,
+            type: "expense",
+            name: {
+              contains: args.categoryName,
+            },
+          },
+          select: {
+            name: true,
+            description: true,
+          },
+        });
+
         return {
           categoryName: args.categoryName,
+          categoryDescription: category?.description || "",
           total,
           count,
           transactions: transactions.slice(0, 5), // Return top 5 transactions as examples
@@ -45,7 +61,6 @@ export function getAITools(userId: string) {
       },
     }),
 
-    // Tool: Get top spending categories
     getTopSpendingCategories: tool({
       description: "Get the top spending categories for a given period. Useful for understanding where most money is going.",
       inputSchema: z.object({
@@ -78,11 +93,36 @@ export function getAITools(userId: string) {
           return acc;
         }, {} as Record<string, number>);
 
+        // Get category descriptions
+        const categoryNames = Object.keys(categoryTotals);
+        const categories = await prisma.category.findMany({
+          where: {
+            userId,
+            type: "expense",
+            name: {
+              in: categoryNames,
+            },
+          },
+          select: {
+            name: true,
+            description: true,
+          },
+        });
+
+        const categoryDescriptions = categories.reduce((acc, cat) => {
+          acc[cat.name] = cat.description || "";
+          return acc;
+        }, {} as Record<string, string>);
+
         // Sort and limit
         const topCategories = Object.entries(categoryTotals)
           .sort(([, a], [, b]) => b - a)
           .slice(0, limit)
-          .map(([category, amount]) => ({ category, amount }));
+          .map(([category, amount]) => ({ 
+            category, 
+            amount,
+            description: categoryDescriptions[category] || "",
+          }));
 
         return {
           topCategories,
@@ -91,7 +131,6 @@ export function getAITools(userId: string) {
       },
     }),
 
-    // Tool: Get spending summary
     getSpendingSummary: tool({
       description: "Get overall spending and income summary for a period. Shows total income, expenses, and savings.",
       inputSchema: z.object({
@@ -178,7 +217,6 @@ export function getAITools(userId: string) {
       },
     }),
 
-    // Tool: Get savings recommendations
     getSavingsRecommendations: tool({
       description: "Analyze spending patterns and suggest categories where the user could cut expenses to improve savings. It is required to check descriptions of each category to provide more tailored advice.",
       inputSchema: z.object({
@@ -204,30 +242,42 @@ export function getAITools(userId: string) {
           },
         });
 
-        // Group by category
         const categoryTotals = transactions.reduce((acc, t) => {
           acc[t.category] = (acc[t.category] || 0) + t.amount;
           return acc;
         }, {} as Record<string, number>);
 
-        const categoryDescriptions = transactions.reduce((acc, t) => {
-          acc[t.category] = t.description;
+        const categoryNames = Object.keys(categoryTotals);
+        const categories = await prisma.category.findMany({
+          where: {
+            userId,
+            type: "expense",
+            name: {
+              in: categoryNames,
+            },
+          },
+          select: {
+            name: true,
+            description: true,
+          },
+        });
+
+        const categoryDescriptions = categories.reduce((acc, cat) => {
+          acc[cat.name] = cat.description || "";
           return acc;
         }, {} as Record<string, string>);
 
-        // Calculate average per month
         const categoryAverages = Object.entries(categoryTotals).map(([category, total]) => ({
           category,
           averagePerMonth: total / monthsToAnalyze,
           totalSpent: total,
+          description: categoryDescriptions[category] || "",
         }));
 
-        // Sort by average spending
         categoryAverages.sort((a, b) => b.averagePerMonth - a.averagePerMonth);
 
         return {
           topSpendingCategories: categoryAverages.slice(0, 5),
-          categoryDescriptions,
           analysisPeriod: {
             months: monthsToAnalyze,
             start: start.toISOString(),
