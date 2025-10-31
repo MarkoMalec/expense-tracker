@@ -1,8 +1,6 @@
 import CreateTransactionDialog from "@/app/(dashboard)/_components/CreateTransactionDialog";
 import History from "@/app/(dashboard)/_components/History";
 import Overview from "@/app/(dashboard)/_components/Overview";
-import InitialBalanceDialog from "@/app/(dashboard)/_components/InitialBalanceDialog";
-import BillingCycleDialog from "@/app/(dashboard)/_components/BillingCycleDialog";
 import { Button } from "@/components/ui/button";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";

@@ -35,9 +35,8 @@ function WizardForm() {
     try {
       setIsSubmitting(true);
 
-      // Update initial balance if set
       const balance = parseFloat(initialBalance);
-      if (!isNaN(balance) && balance !== 0) {
+      if (!isNaN(balance)) {
         const response = await fetch("/api/user-settings/initial-balance", {
           method: "POST",
           headers: {

@@ -124,34 +124,34 @@ function BudgetHealthScore({ from, to, userSettings }: Props) {
         <CardHeader>
           <CardTitle>Financial Health Score</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 md:space-y-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <div
                 className={cn(
-                  "flex h-16 w-16 items-center justify-center rounded-full",
+                  "flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-full",
                   healthStatus.bgColor,
                   "bg-opacity-10"
                 )}
               >
-                <HealthIcon className={cn("h-8 w-8", healthStatus.color)} />
+                <HealthIcon className={cn("h-6 w-6 md:h-8 md:w-8", healthStatus.color)} />
               </div>
               <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold">{healthScore}</span>
-                  <span className="text-muted-foreground">/100</span>
+                <div className="flex items-baseline gap-1 md:gap-2">
+                  <span className="text-2xl md:text-4xl font-bold">{healthScore}</span>
+                  <span className="text-xs md:text-sm text-muted-foreground">/100</span>
                 </div>
-                <p className={cn("text-sm font-medium", healthStatus.color)}>
+                <p className={cn("text-xs md:text-sm font-medium", healthStatus.color)}>
                   {healthStatus.label}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Savings Rate</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Savings Rate</p>
               <p
                 className={cn(
-                  "text-2xl font-bold",
+                  "text-lg md:text-2xl font-bold",
                   savingsRate >= 0 ? "text-emerald-600" : "text-red-600"
                 )}
               >
@@ -161,18 +161,18 @@ function BudgetHealthScore({ from, to, userSettings }: Props) {
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs md:text-sm">
               <span className="text-muted-foreground">Overall Health</span>
               <span className="font-medium">{healthScore}%</span>
             </div>
-            <Progress value={healthScore} className="h-3" />
+            <Progress value={healthScore} className="h-2 md:h-3" />
           </div>
 
-          <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-            <p className="text-sm font-semibold flex items-center gap-2">
+          <div className="rounded-lg bg-muted/50 p-3 md:p-4 space-y-2">
+            <p className="text-xs md:text-sm font-semibold flex items-center gap-2">
               <span>💡</span> Recommendations
             </p>
-            <ul className="space-y-1.5 text-xs text-muted-foreground">
+            <ul className="space-y-1.5 text-[10px] md:text-xs text-muted-foreground">
               {healthStatus.tips.map((tip, index) => (
                 <li key={index} className="flex gap-2">
                   <span className="text-primary">•</span>
@@ -182,16 +182,16 @@ function BudgetHealthScore({ from, to, userSettings }: Props) {
             </ul>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-lg border p-3">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs md:text-sm">
+            <div className="rounded-lg border p-2 md:p-3">
               <p className="text-muted-foreground mb-1">Income</p>
-              <p className="font-semibold text-emerald-600">
+              <p className="font-semibold text-emerald-600 text-xs md:text-sm">
                 {formatter.format(income)}
               </p>
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="rounded-lg border p-2 md:p-3">
               <p className="text-muted-foreground mb-1">Expenses</p>
-              <p className="font-semibold text-red-600">
+              <p className="font-semibold text-red-600 text-xs md:text-sm">
                 {formatter.format(expense)}
               </p>
             </div>

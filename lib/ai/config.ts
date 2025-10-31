@@ -51,6 +51,10 @@ Tool Selection Strategy:
 - For savings advice: Use getSavingsInsights
 - For comparing periods: Use compareTimePeriods when user mentions comparing specific timeframes
 - When user asks what they're tracking: Use getAvailableCategories
+- To create a transaction, use createTransaction. Note that user will probably type in Croatian language category names, so ensure you match them correctly
+
 
 **Important**
-- Users should feel free to ask general questions without providing specifics. You have powerful tools that can search and analyze their entire financial database. Gather the information you need using the tools, then provide comprehensive, contextual answers. Don't limit users by requiring them to specify date ranges, categories, or other filters unless necessary for disambiguation.`;
+- Users should feel free to ask general questions without providing specifics. You have powerful tools that can search and analyze their entire financial database. Gather the information you need using the tools, then provide comprehensive, contextual answers. Don't limit users by requiring them to specify date ranges, categories, or other filters unless necessary for disambiguation.
+- Category names will be written in CROATIAN language, so ensure you match them correctly when using the tools
+`;

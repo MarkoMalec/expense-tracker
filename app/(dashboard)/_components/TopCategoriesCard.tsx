@@ -67,12 +67,12 @@ function TopCategoriesCard({ from, to, userSettings }: Props) {
             {/* Top Income Categories */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">Top Income Sources</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs md:text-sm font-semibold">Top Income Sources</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">
                     {formatter.format(totalIncome)} total
                   </p>
                 </div>
@@ -107,12 +107,12 @@ function TopCategoriesCard({ from, to, userSettings }: Props) {
             {/* Top Expense Categories */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
+                <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-lg bg-red-500/10">
+                  <TrendingDown className="h-3 w-3 md:h-4 md:w-4 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">Top Expenses</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs md:text-sm font-semibold">Top Expenses</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">
                     {formatter.format(totalExpense)} total
                   </p>
                 </div>
@@ -173,29 +173,29 @@ function CategoryItem({
   const rankBgs = ["bg-yellow-100 dark:bg-yellow-950/30", "bg-gray-100 dark:bg-gray-800", "bg-orange-100 dark:bg-orange-950/30"];
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+    <div className="flex items-center gap-2 md:gap-3 rounded-lg border p-2 md:p-3 hover:bg-muted/50 transition-colors">
       <div
         className={cn(
-          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+          "flex h-5 w-5 md:h-6 md:w-6 items-center justify-center rounded-full text-[10px] md:text-xs font-bold flex-shrink-0",
           rankBgs[rank - 1],
           rankColors[rank - 1]
         )}
       >
         {rank}
       </div>
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="text-lg">{icon}</span>
+      <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0">
+        <span className="text-base md:text-lg flex-shrink-0">{icon}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{name}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs md:text-sm font-medium truncate">{name}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground">
             {percentage.toFixed(1)}% of total
           </p>
         </div>
       </div>
-      <div className="text-right">
+      <div className="text-right flex-shrink-0">
         <p
           className={cn(
-            "text-sm font-semibold",
+            "text-xs md:text-sm font-semibold",
             type === "income" ? "text-emerald-600" : "text-red-600"
           )}
         >

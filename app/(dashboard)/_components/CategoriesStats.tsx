@@ -72,16 +72,16 @@ function CategoriesCard({
   return (
     <Card className="h-80 w-full col-span-6">
       <CardHeader>
-        <CardTitle className="grid grid-flow-row justify-between gap-2 text-muted-foreground md:grid-flow-col">
+        <CardTitle className="grid grid-flow-row justify-between gap-2 text-sm md:text-base text-muted-foreground md:grid-flow-col">
           {type === "income" ? "Incomes" : "Expenses"} by category
         </CardTitle>
       </CardHeader>
 
       <div className="flex items-center justify-between gap-2">
         {filteredData.length === 0 && (
-          <div className="flex h-60 w-full flex-col items-center justify-center">
-            No data for the selected period
-            <p className="text-sm text-muted-foreground">
+          <div className="flex h-60 w-full flex-col items-center justify-center px-4">
+            <p className="text-sm md:text-base font-medium text-center">No data for the selected period</p>
+            <p className="text-xs md:text-sm text-muted-foreground text-center">
               Try selecting a different period or try adding new{" "}
               {type === "income" ? "incomes" : "expenses"}
             </p>
@@ -97,15 +97,16 @@ function CategoriesCard({
 
                 return (
                   <div key={item.category} className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center text-gray-400">
-                        {item.categoryIcon} {item.category}
-                        <span className="ml-2 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center text-gray-400 min-w-0 text-xs md:text-sm">
+                        <span className="flex-shrink-0">{item.categoryIcon}</span>
+                        <span className="ml-1 truncate">{item.category}</span>
+                        <span className="ml-1 md:ml-2 text-[10px] md:text-xs text-muted-foreground flex-shrink-0">
                           ({percentage.toFixed(0)}%)
                         </span>
                       </span>
 
-                      <span className="text-sm text-gray-400">
+                      <span className="text-xs md:text-sm text-gray-400 flex-shrink-0">
                         {formatter.format(amount)}
                       </span>
                     </div>

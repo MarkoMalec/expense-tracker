@@ -67,16 +67,16 @@ function SavingsCard({ from, to, userSettings }: Props) {
           <div className="flex items-center gap-2">
             <div
               className={cn(
-                "h-12 w-12 items-center rounded-lg p-2 flex justify-center",
+                "h-10 w-10 md:h-12 md:w-12 items-center rounded-lg p-2 flex justify-center",
                 isPositive
                   ? "bg-emerald-400/10 text-emerald-500"
                   : "bg-red-400/10 text-red-500"
               )}
             >
-              <PiggyBank className="h-6 w-6" />
+              <PiggyBank className="h-5 w-5 md:h-6 md:w-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current Savings</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Current Savings</p>
               <div className="flex items-baseline gap-2">
                 <CountUp
                   preserveValue
@@ -84,7 +84,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
                   end={savings}
                   decimals={2}
                   formattingFn={(value) => formatter.format(value)}
-                  className="text-3xl font-bold"
+                  className="text-xl md:text-3xl font-bold"
                 />
               </div>
             </div>
@@ -96,12 +96,12 @@ function SavingsCard({ from, to, userSettings }: Props) {
         {/* Spending Budget Progress */}
         {hasGoal && income > 0 && (
           <div className="mb-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs md:text-sm">
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-blue-500" />
+                <Target className="h-3 w-3 md:h-4 md:w-4 text-blue-500" />
                 <span className="text-muted-foreground">Spending Budget</span>
               </div>
-              <span className="font-semibold text-blue-600">
+              <span className="font-semibold text-blue-600 text-xs md:text-sm">
                 {formatter.format(spendingBudget)}
               </span>
             </div>
@@ -109,7 +109,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
               value={Math.min(budgetUsedPercent, 100)}
               className={cn("h-2", isOverBudget && "bg-red-200")}
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-[10px] md:text-xs text-muted-foreground">
               <span>
                 {isOverBudget
                   ? "⚠️ Over budget!"
@@ -124,23 +124,23 @@ function SavingsCard({ from, to, userSettings }: Props) {
         {hasGoal && income > 0 && (
           <div
             className={cn(
-              "mb-4 rounded-lg p-4 border",
+              "mb-4 rounded-lg p-3 md:p-4 border",
               isOverBudget
                 ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900"
                 : "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900"
             )}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2 md:gap-3">
               <AlertCircle
                 className={cn(
-                  "h-5 w-5 mt-0.5 flex-shrink-0",
+                  "h-4 w-4 md:h-5 md:w-5 mt-0.5 flex-shrink-0",
                   isOverBudget ? "text-red-600" : "text-blue-600"
                 )}
               />
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p
                   className={cn(
-                    "text-sm font-semibold mb-1",
+                    "text-xs md:text-sm font-semibold mb-1",
                     isOverBudget
                       ? "text-red-900 dark:text-red-100"
                       : "text-blue-900 dark:text-blue-100"
@@ -150,7 +150,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
                 </p>
                 <p
                   className={cn(
-                    "text-2xl font-bold mb-2",
+                    "text-lg md:text-2xl font-bold mb-2 break-words",
                     isOverBudget
                       ? "text-red-700 dark:text-red-300"
                       : "text-blue-700 dark:text-blue-300"
@@ -160,7 +160,7 @@ function SavingsCard({ from, to, userSettings }: Props) {
                 </p>
                 <p
                   className={cn(
-                    "text-xs",
+                    "text-[10px] md:text-xs leading-relaxed",
                     isOverBudget
                       ? "text-red-700 dark:text-red-300"
                       : "text-blue-700 dark:text-blue-300"
@@ -186,19 +186,19 @@ function SavingsCard({ from, to, userSettings }: Props) {
         )}
 
         <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-muted-foreground">Total Income</span>
             <span className="font-medium text-emerald-600">
               {formatter.format(income)}
             </span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs md:text-sm">
             <span className="text-muted-foreground">Total Expenses</span>
             <span className="font-medium text-red-600">
               {formatter.format(expense)}
             </span>
           </div>
-          <div className="flex justify-between text-sm pt-2 border-t">
+          <div className="flex justify-between text-xs md:text-sm pt-2 border-t">
             <span className="text-muted-foreground font-medium">
               Savings Rate
             </span>
@@ -214,8 +214,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
         </div>
 
         {!hasGoal && isPositive && (
-          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-3 border border-blue-200 dark:border-blue-900">
-            <p className="text-xs text-blue-700 dark:text-blue-300">
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-2 md:p-3 border border-blue-200 dark:border-blue-900">
+            <p className="text-[10px] md:text-xs text-blue-700 dark:text-blue-300">
               💡 Set a savings goal to see your spending budget and track your
               financial progress!
             </p>
@@ -223,8 +223,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
         )}
 
         {hasGoal && projectedSavings >= userSettings.savingsGoal && (
-          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3 border border-emerald-200 dark:border-emerald-900">
-            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-2 md:p-3 border border-emerald-200 dark:border-emerald-900">
+            <p className="text-[10px] md:text-xs text-emerald-700 dark:text-emerald-300">
               🎉 On track to save {formatter.format(userSettings.savingsGoal)}!
               Current projected savings: {formatter.format(projectedSavings)}
             </p>
@@ -232,8 +232,8 @@ function SavingsCard({ from, to, userSettings }: Props) {
         )}
 
         {!isPositive && (
-          <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-3 border border-red-200 dark:border-red-900">
-            <p className="text-xs text-red-700 dark:text-red-300">
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/30 p-2 md:p-3 border border-red-200 dark:border-red-900">
+            <p className="text-[10px] md:text-xs text-red-700 dark:text-red-300">
               ⚠️ You're spending more than earning. Review your expenses to get
               back on track.
             </p>

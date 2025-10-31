@@ -44,7 +44,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           value={income}
           title="Income"
           icon={
-            <TrendingUp className="h-12 w-12 items-center rounded-lg p-2 text-emerald-500 bg-emerald-400/10" />
+            <TrendingUp className="h-10 w-10 md:h-12 md:w-12 items-center rounded-lg p-2 text-emerald-500 bg-emerald-400/10 flex-shrink-0" />
           }
         />
       </SkeletonWrapper>
@@ -55,7 +55,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           value={expense}
           title="Expense"
           icon={
-            <TrendingDown className="h-12 w-12 items-center rounded-lg p-2 text-red-500 bg-red-400/10" />
+            <TrendingDown className="h-10 w-10 md:h-12 md:w-12 items-center rounded-lg p-2 text-red-500 bg-red-400/10 flex-shrink-0" />
           }
         />
       </SkeletonWrapper>
@@ -66,7 +66,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           value={balance}
           title="Current Balance"
           icon={
-            <Wallet className="h-12 w-12 items-center rounded-lg p-2 text-violet-500 bg-violet-400/10" />
+            <Wallet className="h-10 w-10 md:h-12 md:w-12 items-center rounded-lg p-2 text-violet-500 bg-violet-400/10 flex-shrink-0" />
           }
         />
       </SkeletonWrapper>
@@ -95,17 +95,17 @@ function StatCard({
   );
 
   return (
-    <Card className="flex h-24 w-full items-center gap-2 p-4">
+    <Card className="flex h-24 w-full items-center gap-2 p-3 md:p-4">
       {icon}
-      <div className="flex flex-col items-start gap-0">
-        <p className="text-muted-foreground">{title}</p>
+      <div className="flex flex-col items-start gap-0 min-w-0 flex-1">
+        <p className="text-xs md:text-sm text-muted-foreground truncate">{title}</p>
         <CountUp
           preserveValue
           redraw={false}
           end={value}
           decimals={2}
           formattingFn={formatFn}
-          className="text-2xl"
+          className="text-lg md:text-2xl font-bold truncate"
         />
       </div>
     </Card>

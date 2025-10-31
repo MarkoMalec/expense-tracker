@@ -217,7 +217,7 @@ function CategoryList({ type }: { type: TransactionType }) {
     <SkeletonWrapper isLoading={categoriesQuery.isLoading}>
       <Card className="overflow-hidden">
         <CardHeader className="border-b bg-muted/30">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center gap-4">
               <div
                 className={cn(

@@ -37,7 +37,7 @@ function MobileNavbar() {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[400px] sm:w-[540px]" side="left">
+          <SheetContent className="w-full max-w-[400px]" side="left">
             <Logo />
             <div className="flex flex-col gap-1 pt-4">
               {items.map((item) => (
