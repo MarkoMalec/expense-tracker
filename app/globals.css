@@ -91,3 +91,45 @@
   .assistant-msg li {
     margin-bottom: 8px;
   }
+
+  .assistant-msg table {
+    /* width: 100%; */
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin: 12px 0;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    overflow: scroll;
+  }
+
+  .assistant-msg thead {
+    background-color: hsl(var(--muted));
+  }
+
+  .assistant-msg th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .assistant-msg td {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .assistant-msg tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .assistant-msg tbody tr:hover {
+    background-color: hsl(var(--accent) / 0.5);
+  }
+
+  .assistant-msg tbody tr {
+    transition: background-color 0.15s ease;
+  }

@@ -20,8 +20,6 @@ async function page() {
     },
   });
 
-  console.log(userSettings);
-
   if (!userSettings || !userSettings.currency || !userSettings.initialBalance) {
     redirect("/wizard");
   }
