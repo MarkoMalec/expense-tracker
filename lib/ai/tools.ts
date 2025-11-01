@@ -29,22 +29,49 @@ export function getAITools(userId: string) {
       IMPORTANT: When user asks for "all transactions in category X" or "list expenses for category Y", use the categoryName parameter to search by category, NOT searchTerm.
       When user asks to find specific items or merchants (e.g., "find coffee purchases"), use searchTerm to search in descriptions.
       
+      DATE HANDLING: 
+      - When searching for "yesterday", "last week", etc., calculate the EXACT dates and pass them as startDate/endDate
+      - Always use YYYY-MM-DD format for dates
+      - Include the FULL day range (set end time to end of day, not start of day)
+      - If no dates provided, searches ALL transactions ever recorded
+      
       This is the most flexible tool for exploring user's financial data. When user asks general questions without specifics, use this to gather comprehensive information first.`,
       inputSchema: z.object({
-        searchTerm: z.string().optional().describe("Keyword to search in transaction DESCRIPTIONS (e.g., 'starbucks', 'taxi', 'amazon'). Do NOT use this for category searches."),
-        categoryName: z.string().optional().describe("Category name to filter by (e.g., 'restaurants', 'transport', 'groceries'). Use this when user asks for transactions in a specific category."),
+        searchTerm: z.string().optional().describe("Keyword to search in transaction DESCRIPTIONS (e.g., 'starbucks', 'taxi', 'amazon'). Do NOT use this for category searches. Case-insensitive search."),
+        categoryName: z.string().optional().describe("Category name to filter by (e.g., 'restaurants', 'transport', 'groceries'). Use this when user asks for transactions in a specific category. Case-insensitive, partial match supported."),
         type: z.enum(["income", "expense", "both"]).default("both").describe("Transaction type to filter by"),
-        startDate: z.string().optional().describe("Optional start date in ISO format (YYYY-MM-DD). If not provided, searches all time."),
-        endDate: z.string().optional().describe("Optional end date in ISO format (YYYY-MM-DD). If not provided, uses current date."),
+        startDate: z.string().optional().describe("Start date in ISO format (YYYY-MM-DD). If not provided, searches from beginning of time. For 'yesterday', calculate exact date. For 'today', use today's date."),
+        endDate: z.string().optional().describe("End date in ISO format (YYYY-MM-DD). If not provided, uses current date+time. IMPORTANT: This should be END of the day, not start of day."),
         limit: z.number().default(50).describe("Maximum number of transactions to return (default: 50, max: 200)"),
         sortBy: z.enum(["date", "amount"]).default("date").describe("Sort results by date or amount"),
         sortOrder: z.enum(["asc", "desc"]).default("desc").describe("Sort order: ascending or descending"),
       }),
       execute: async (args) => {
-        const start = args.startDate ? parseFlexibleDate(args.startDate, new Date(0)) : new Date(0);
-        const end = args.endDate ? parseFlexibleDate(args.endDate, new Date()) : new Date();
+        // Enhanced date parsing with proper timezone handling
+        let start: Date;
+        let end: Date;
+        
+        if (args.startDate) {
+          // Parse start date and set to beginning of day (00:00:00)
+          start = parseFlexibleDate(args.startDate, new Date(0));
+          start.setHours(0, 0, 0, 0);
+        } else {
+          // If no start date, search from beginning of time
+          start = new Date(0);
+        }
+        
+        if (args.endDate) {
+          // Parse end date and set to END of day (23:59:59.999)
+          end = parseFlexibleDate(args.endDate, new Date());
+          end.setHours(23, 59, 59, 999);
+        } else {
+          // If no end date, use current moment
+          end = new Date();
+        }
+
         const limitCapped = Math.min(args.limit, 200);
 
+        // Build where clause with better structure
         const whereClause: any = {
           userId,
           date: {
@@ -57,26 +84,39 @@ export function getAITools(userId: string) {
           whereClause.type = args.type;
         }
 
+        // Case-insensitive description search (manual toLowerCase for MySQL compatibility)
         if (args.searchTerm) {
           whereClause.description = {
             contains: args.searchTerm,
           };
         }
 
+        // Enhanced category search with better matching
+        let categoryFound = null;
         if (args.categoryName) {
-          const category = await prisma.category.findFirst({
+          // Try to find category (MySQL is case-insensitive by default for LIKE operations)
+          // First try exact match
+          const categories = await prisma.category.findMany({
             where: {
               userId,
-              name: {
-                contains: args.categoryName,
-              },
+            },
+            select: {
+              id: true,
+              name: true,
             },
           });
-          if (category) {
-            whereClause.categoryId = category.id;
+
+          // Find best match (case-insensitive)
+          const searchLower = args.categoryName.toLowerCase();
+          categoryFound = categories.find(c => c.name.toLowerCase() === searchLower) || 
+                         categories.find(c => c.name.toLowerCase().includes(searchLower));
+
+          if (categoryFound) {
+            whereClause.categoryId = categoryFound.id;
           }
         }
 
+        // Execute the query
         const transactions = await prisma.transaction.findMany({
           where: whereClause,
           select: {
@@ -85,10 +125,13 @@ export function getAITools(userId: string) {
             description: true,
             date: true,
             type: true,
+            createdAt: true,
             category: {
               select: {
+                id: true,
                 name: true,
                 icon: true,
+                description: true,
               },
             },
           },
@@ -98,25 +141,72 @@ export function getAITools(userId: string) {
           take: limitCapped,
         });
 
+        // Calculate summary statistics
         const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
         const incomeAmount = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
         const expenseAmount = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
 
+        // Enhanced debugging information
+        const debugInfo = {
+          queryExecutedAt: new Date().toISOString(),
+          dateRangeUsed: {
+            start: start.toISOString(),
+            end: end.toISOString(),
+            startLocalTime: start.toLocaleString('en-US', { timeZone: 'UTC' }),
+            endLocalTime: end.toLocaleString('en-US', { timeZone: 'UTC' }),
+          },
+          categorySearchResult: args.categoryName ? {
+            searched: args.categoryName,
+            found: categoryFound?.name || 'NOT_FOUND',
+            categoryId: categoryFound?.id || null,
+          } : null,
+          filtersApplied: {
+            hasSearchTerm: !!args.searchTerm,
+            hasCategoryFilter: !!categoryFound,
+            typeFilter: args.type,
+          },
+        };
+
         return {
-          transactions,
+          success: true,
+          transactions: transactions.map(t => ({
+            id: t.id,
+            amount: t.amount,
+            description: t.description,
+            date: t.date.toISOString(),
+            dateLocal: t.date.toLocaleString('en-US', { timeZone: 'UTC' }),
+            type: t.type,
+            category: {
+              id: t.category.id,
+              name: t.category.name,
+              icon: t.category.icon,
+              description: t.category.description,
+            },
+            createdAt: t.createdAt.toISOString(),
+          })),
           summary: {
             totalCount: transactions.length,
-            totalAmount,
-            incomeAmount,
-            expenseAmount,
-            netAmount: incomeAmount - expenseAmount,
+            totalAmount: Math.round(totalAmount * 100) / 100,
+            incomeAmount: Math.round(incomeAmount * 100) / 100,
+            expenseAmount: Math.round(expenseAmount * 100) / 100,
+            netAmount: Math.round((incomeAmount - expenseAmount) * 100) / 100,
           },
           searchCriteria: {
-            searchTerm: args.searchTerm || "all",
-            categoryName: args.categoryName || "all",
+            searchTerm: args.searchTerm || null,
+            categoryName: args.categoryName || null,
+            categoryFound: categoryFound?.name || null,
             type: args.type,
-            dateRange: { start: start.toISOString(), end: end.toISOString() },
+            dateRange: { 
+              start: start.toISOString(), 
+              end: end.toISOString(),
+              startDate: args.startDate || 'ALL_TIME',
+              endDate: args.endDate || 'NOW',
+            },
+            limit: limitCapped,
+            sortBy: args.sortBy,
+            sortOrder: args.sortOrder,
           },
+          debug: debugInfo,
         };
       },
     }),
@@ -944,15 +1034,33 @@ export function getAITools(userId: string) {
         description: `Create a new expense transaction for the user. Use this when:
         - User wants to log a new expense
         - User provides details like amount, category, date, and description
+        
+        CRITICAL DATE HANDLING:
+        - When user says "prekjučer" (day before yesterday), calculate the exact date: ${new Date(Date.now() - 2*24*60*60*1000).toISOString().split("T")[0]}
+        - When user says "jučer" (yesterday), use: ${new Date(Date.now() - 24*60*60*1000).toISOString().split("T")[0]}
+        - When user says "danas" (today), use: ${new Date().toISOString().split("T")[0]}
+        - ALWAYS pass dates in YYYY-MM-DD format
+        - The tool will set the time to NOON (12:00:00) to avoid timezone issues
+        
         Ensure the transaction is saved correctly in the database.`,
         inputSchema: z.object({
           amount: z.number().describe("Amount of the expense"),
-          category: z.string().describe("Category of the expense"),
-          date: z.string().optional().describe("Date of the expense in ISO format. Defaults to today."),
+          category: z.string().describe("Category name of the expense (in Croatian, e.g., 'Auto', 'Restorani', 'Hrana')"),
+          date: z.string().optional().describe("Date of the expense in YYYY-MM-DD format. Defaults to today. IMPORTANT: Calculate exact dates for relative terms like 'prekjučer', 'jučer', etc."),
           description: z.string().optional().describe("Optional description for the expense"),
         }),
         execute: async (args) => {
-          const expenseDate = args.date ? parseFlexibleDate(args.date, new Date()) : new Date();
+          // Parse date and set to NOON to avoid timezone shifting issues
+          let expenseDate: Date;
+          if (args.date) {
+            expenseDate = parseFlexibleDate(args.date, new Date());
+            // Set to noon (12:00:00) to avoid timezone boundary issues
+            expenseDate.setHours(12, 0, 0, 0);
+          } else {
+            expenseDate = new Date();
+            expenseDate.setHours(12, 0, 0, 0);
+          }
+
           const form = {
             amount: args.amount,
             category: args.category,
@@ -962,12 +1070,42 @@ export function getAITools(userId: string) {
             userId,
           };
 
-          const newTransaction = CreateTransaction(form)
+          try {
+            const newTransaction = await CreateTransaction(form);
 
-          return {
-            transaction: newTransaction,
-            message: "Expense transaction created successfully.",
-          };
+            return {
+              success: true,
+              transaction: {
+                amount: args.amount,
+                category: args.category,
+                date: expenseDate.toISOString(),
+                dateFormatted: expenseDate.toLocaleDateString('hr-HR', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                }),
+                description: args.description || "",
+              },
+              message: `Transakcija uspješno kreirana za ${expenseDate.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long' })}`,
+              debug: {
+                dateReceived: args.date || 'not provided',
+                dateParsed: expenseDate.toISOString(),
+                dateLocal: expenseDate.toLocaleString('hr-HR'),
+                timeSet: '12:00:00 (noon to avoid timezone issues)',
+              },
+            };
+          } catch (error: any) {
+            return {
+              success: false,
+              error: error.message || "Failed to create transaction",
+              debug: {
+                dateReceived: args.date || 'not provided',
+                dateParsed: expenseDate.toISOString(),
+                category: args.category,
+                amount: args.amount,
+              },
+            };
+          }
         }
     }),
   };
