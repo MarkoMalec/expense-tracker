@@ -11,6 +11,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -31,6 +32,16 @@ function SpendingTrendChart({ userSettings }: Props) {
     queryKey: ["spending-trend"],
     queryFn: async () => {
       const monthsData = [];
+      let cumulativeBalance = userSettings.initialBalance;
+
+      // Get all transactions up to 6 months ago to calculate starting balance
+      const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+      const allTransactionsBeforeResponse = await fetch(
+        `/api/stats/balance?from=1970-01-01&to=${sixMonthsAgo.toISOString()}`
+      );
+      const allTransactionsBefore = await allTransactionsBeforeResponse.json();
+      cumulativeBalance += (allTransactionsBefore.income || 0) - (allTransactionsBefore.expense || 0);
+
       for (let i = 5; i >= 0; i--) {
         const date = subMonths(new Date(), i);
         const start = startOfMonth(date);
@@ -41,15 +52,23 @@ function SpendingTrendChart({ userSettings }: Props) {
         );
         const data = await response.json();
 
+        const income = data.income || 0;
+        const expense = data.expense || 0;
+        const savings = income - expense;
+        
+        // Add this month's net change to cumulative balance
+        cumulativeBalance += savings;
+
         monthsData.push({
           month: date.toLocaleDateString("default", { month: "short" }),
           fullMonth: date.toLocaleDateString("default", {
             month: "long",
             year: "numeric",
           }),
-          income: data.income || 0,
-          expense: data.expense || 0,
-          savings: (data.income || 0) - (data.expense || 0),
+          income,
+          expense,
+          savings,
+          balance: cumulativeBalance,
         });
       }
       return monthsData;
@@ -87,6 +106,10 @@ function SpendingTrendChart({ userSettings }: Props) {
                   Avg: {formatter.format(avgExpense)}
                 </span>
               </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-blue-500" />
+                <span className="text-muted-foreground">Balance</span>
+              </div>
             </div>
           </CardTitle>
         </CardHeader>
@@ -102,6 +125,10 @@ function SpendingTrendChart({ userSettings }: Props) {
                   <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ef4444" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+                  </linearGradient>
+                    <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -138,6 +165,14 @@ function SpendingTrendChart({ userSettings }: Props) {
                   stroke="#ef4444"
                   strokeWidth={2}
                   fill="url(#expenseGradient)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                  fill="url(#balanceGradient)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -189,6 +224,19 @@ function CustomTooltip({ active, payload, formatter }: any) {
             }`}
           >
             {formatter.format(data.savings)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t pt-1">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-sm font-semibold text-muted-foreground">Balance:</span>
+          </div>
+          <span
+            className={`text-sm font-bold ${
+              data.balance >= 0 ? "text-blue-600" : "text-orange-600"
+            }`}
+          >
+            {formatter.format(data.balance)}
           </span>
         </div>
       </div>
