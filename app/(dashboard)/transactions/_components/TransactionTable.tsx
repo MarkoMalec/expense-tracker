@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { DataTableViewOptions } from "@/components/datatable/ColumnToggle";
 
 import { download, generateCsv, mkConfig } from "export-to-csv";
-import { DownloadIcon, MoreHorizontal, TrashIcon } from "lucide-react";
+import { DownloadIcon, EditIcon, MoreHorizontal, TrashIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DeleteTransactionDialog from "@/app/(dashboard)/transactions/_components/DeleteTransactionDialog";
+import UpdateTransactionDialog from "./UpdateTransactionDialog";
 
 interface Props {
   from: Date;
@@ -306,6 +307,7 @@ export default TransactionTable;
 
 function RowActions({ transaction }: { transaction: TransactionHistoryRow }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 
   return (
     <>
@@ -313,6 +315,19 @@ function RowActions({ transaction }: { transaction: TransactionHistoryRow }) {
         open={showDeleteDialog}
         setOpen={setShowDeleteDialog}
         transactionId={transaction.id}
+      />
+      <UpdateTransactionDialog
+        trigger={<span className="hidden" />}
+        transaction={{
+          id: transaction.id,
+          description: transaction.description,
+          amount: transaction.amount,
+          date: transaction.date,
+          type: transaction.type as "income" | "expense",
+          category: transaction.category.name,
+        }}
+        open={showUpdateDialog}
+        setOpen={setShowUpdateDialog}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -324,6 +339,15 @@ function RowActions({ transaction }: { transaction: TransactionHistoryRow }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="flex items-center gap-2"
+            onSelect={() => {
+              setShowUpdateDialog((prev) => !prev);
+            }}
+          >
+            <EditIcon className="h-4 w-4 text-muted-foreground" />
+            Edit
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="flex items-center gap-2"
             onSelect={() => {

@@ -25,15 +25,22 @@ import React, { useCallback, useEffect, useState } from "react";
 interface Props {
   type: TransactionType;
   onChange: (value: string) => void;
+
+  defaultValue?: string;
 }
 
-function CategoryPicker({ type, onChange }: Props) {
+function CategoryPicker({ type, onChange, defaultValue }: Props) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
   useEffect(() => {
+    if (defaultValue) {
+      setValue(defaultValue);
+    }
+  }, [defaultValue]);
+
+  useEffect(() => {
     if (!value) return;
-    // when the value changes, call onChange callback
     onChange(value);
   }, [onChange, value]);
 
