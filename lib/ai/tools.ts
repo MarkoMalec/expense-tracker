@@ -1108,5 +1108,52 @@ export function getAITools(userId: string) {
           }
         }
     }),
+
+    modifyTransaction: tool({
+      description: `Modify an existing transaction's details such as amount, category, date, or description.`,
+      inputSchema: z.object({
+        transactionId: z.string().describe("ID of the transaction to modify"),
+        amount: z.number().optional().describe("New amount for the transaction"),
+        category: z.string().optional().describe("New category name for the transaction"),
+        date: z.string().optional().describe("New date for the transaction in YYYY-MM-DD format"),
+        description: z.string().optional().describe("New description for the transaction"),
+      }),
+      execute: async (args) => {
+        const updateData: any = {};
+        if (args.amount !== undefined) updateData.amount = args.amount;
+        if (args.category !== undefined) updateData.categoryName = args.category;
+        if (args.date !== undefined) {
+          const newDate = parseFlexibleDate(args.date, new Date());
+          newDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+          updateData.date = newDate;
+        }
+        if (args.description !== undefined) updateData.description = args.description;
+
+        try {
+          const updatedTransaction = await prisma.transaction.update({
+            where: {
+              id: args.transactionId,
+            },
+            data: updateData,
+          });
+
+          return {
+            success: true,
+            transaction: {
+              id: updatedTransaction.id,
+              amount: updatedTransaction.amount,
+              category: updatedTransaction.categoryId,
+              date: updatedTransaction.date.toISOString(),
+              description: updatedTransaction.description,
+            },
+          };
+        } catch (error: any) {
+          return {
+            success: false,
+            error: error.message || "Failed to modify transaction",
+          };
+        }
+      },
+    }),
   };
 }
