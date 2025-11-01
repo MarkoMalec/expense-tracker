@@ -59,12 +59,12 @@ const columns: ColumnDef<TransactionHistoryRow>[] = [
       <DataTableColumnHeader column={column} title="Category" />
     ),
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      return value.includes(row.original.category.name);
     },
     cell: ({ row }) => (
       <div className="flex gap-2 capitalize">
-        {row.original.categoryIcon}
-        <div className="capitalize">{row.original.category}</div>
+        {row.original.category.icon}
+        <div className="capitalize">{row.original.category.name}</div>
       </div>
     ),
   },
@@ -173,9 +173,9 @@ function TransactionTable({ from, to }: Props) {
   const categoriesOptions = useMemo(() => {
     const categoriesMap = new Map();
     history.data?.forEach((transaction) => {
-      categoriesMap.set(transaction.category, {
-        value: transaction.category,
-        label: `${transaction.categoryIcon} ${transaction.category}`,
+      categoriesMap.set(transaction.category.name, {
+        value: transaction.category.name,
+        label: `${transaction.category.icon} ${transaction.category.name}`,
       });
     });
     const uniqueCategories = new Set(categoriesMap.values());
@@ -211,8 +211,8 @@ function TransactionTable({ from, to }: Props) {
             className="ml-auto h-8 lg:flex"
             onClick={() => {
               const data = table.getFilteredRowModel().rows.map((row) => ({
-                category: row.original.category,
-                categoryIcon: row.original.categoryIcon,
+                category: row.original.category.name,
+                categoryIcon: row.original.category.icon,
                 description: row.original.description,
                 type: row.original.type,
                 amount: row.original.amount,

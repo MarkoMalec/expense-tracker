@@ -4,9 +4,6 @@ import prisma from "@/lib/prisma";
 import { CreateTransaction } from "@/app/(dashboard)/_actions/transactions";
 import { startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears, parseISO, isValid } from "date-fns";
 
-/**
- * Helper function to parse flexible date inputs
- */
 function parseFlexibleDate(dateStr: string | undefined, defaultDate: Date): Date {
   if (!dateStr) return defaultDate;
   try {
@@ -17,10 +14,6 @@ function parseFlexibleDate(dateStr: string | undefined, defaultDate: Date): Date
   }
 }
 
-/**
- * Get AI Tools with user context
- * This is the centralized place to define all AI tools/functions
- */
 export function getAITools(userId: string) {
   return {
     // Tool: Search and analyze transactions
@@ -71,9 +64,17 @@ export function getAITools(userId: string) {
         }
 
         if (args.categoryName) {
-          whereClause.category = {
-            contains: args.categoryName,
-          };
+          const category = await prisma.category.findFirst({
+            where: {
+              userId,
+              name: {
+                contains: args.categoryName,
+              },
+            },
+          });
+          if (category) {
+            whereClause.categoryId = category.id;
+          }
         }
 
         const transactions = await prisma.transaction.findMany({
@@ -84,8 +85,12 @@ export function getAITools(userId: string) {
             description: true,
             date: true,
             type: true,
-            category: true,
-            categoryIcon: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
           },
           orderBy: args.sortBy === "date" 
             ? { date: args.sortOrder }
@@ -161,7 +166,14 @@ export function getAITools(userId: string) {
           where: whereClause,
           select: {
             amount: true,
-            category: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+                type: true,
+                description: true,
+              },
+            },
             description: true,
             date: true,
             type: true,
@@ -171,9 +183,11 @@ export function getAITools(userId: string) {
         // Group by category
         const categoryData: Record<string, any> = {};
         transactions.forEach(t => {
-          if (!categoryData[t.category]) {
-            categoryData[t.category] = {
-              category: t.category,
+          const categoryName = t.category.name;
+          if (!categoryData[categoryName]) {
+            categoryData[categoryName] = {
+              category: categoryName,
+              icon: t.category.icon,
               type: t.type,
               totalAmount: 0,
               transactionCount: 0,
@@ -181,14 +195,14 @@ export function getAITools(userId: string) {
               monthlyBreakdown: {} as Record<string, number>,
             };
           }
-          categoryData[t.category].totalAmount += t.amount;
-          categoryData[t.category].transactionCount += 1;
-          categoryData[t.category].transactions.push(t);
+          categoryData[categoryName].totalAmount += t.amount;
+          categoryData[categoryName].transactionCount += 1;
+          categoryData[categoryName].transactions.push(t);
           
           if (args.groupByMonth) {
             const monthKey = t.date.toISOString().slice(0, 7);
-            categoryData[t.category].monthlyBreakdown[monthKey] = 
-              (categoryData[t.category].monthlyBreakdown[monthKey] || 0) + t.amount;
+            categoryData[categoryName].monthlyBreakdown[monthKey] = 
+              (categoryData[categoryName].monthlyBreakdown[monthKey] || 0) + t.amount;
           }
         });
 
@@ -217,7 +231,6 @@ export function getAITools(userId: string) {
           return acc;
         }, {} as Record<string, any>);
 
-        // Format results
         const results = Object.values(categoryData).map((data: any) => ({
           category: data.category,
           type: data.type,
@@ -236,7 +249,6 @@ export function getAITools(userId: string) {
             : undefined,
         }));
 
-        // Sort by total amount
         results.sort((a, b) => b.totalAmount - a.totalAmount);
 
         return {
@@ -282,7 +294,12 @@ export function getAITools(userId: string) {
           select: {
             amount: true,
             type: true,
-            category: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
             description: true,
             date: true,
           },
@@ -315,7 +332,7 @@ export function getAITools(userId: string) {
           const categoryTotals = transactions
             .filter(t => t.type === "expense")
             .reduce((acc, t) => {
-              acc[t.category] = (acc[t.category] || 0) + t.amount;
+              acc[t.category.name] = (acc[t.category.name] || 0) + t.amount;
               return acc;
             }, {} as Record<string, number>);
 
@@ -460,7 +477,12 @@ export function getAITools(userId: string) {
             select: {
               amount: true,
               type: true,
-              category: true,
+              category: {
+                select: {
+                  name: true,
+                  icon: true,
+                },
+              },
             },
           });
 
@@ -477,7 +499,7 @@ export function getAITools(userId: string) {
             const categoryTotals = transactions
               .filter(t => t.type === "expense")
               .reduce((acc, t) => {
-                acc[t.category] = (acc[t.category] || 0) + t.amount;
+                acc[t.category.name] = (acc[t.category.name] || 0) + t.amount;
                 return acc;
               }, {} as Record<string, number>);
 
@@ -559,7 +581,13 @@ export function getAITools(userId: string) {
           },
           select: {
             amount: true,
-            category: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+                description: true,
+              },
+            },
             description: true,
             date: true,
           },
@@ -568,21 +596,24 @@ export function getAITools(userId: string) {
         // Calculate category totals and patterns
         const categoryData: Record<string, any> = {};
         transactions.forEach(t => {
-          if (!categoryData[t.category]) {
-            categoryData[t.category] = {
+          const categoryName = t.category.name;
+          if (!categoryData[categoryName]) {
+            categoryData[categoryName] = {
               total: 0,
               count: 0,
+              icon: t.category.icon,
+              description: t.category.description,
               transactions: [],
               monthlySpending: {} as Record<string, number>,
             };
           }
-          categoryData[t.category].total += t.amount;
-          categoryData[t.category].count += 1;
-          categoryData[t.category].transactions.push(t);
+          categoryData[categoryName].total += t.amount;
+          categoryData[categoryName].count += 1;
+          categoryData[categoryName].transactions.push(t);
           
           const monthKey = t.date.toISOString().slice(0, 7);
-          categoryData[t.category].monthlySpending[monthKey] = 
-            (categoryData[t.category].monthlySpending[monthKey] || 0) + t.amount;
+          categoryData[categoryName].monthlySpending[monthKey] = 
+            (categoryData[categoryName].monthlySpending[monthKey] || 0) + t.amount;
         });
 
         // Get category descriptions for context
@@ -722,7 +753,9 @@ export function getAITools(userId: string) {
               const transactions = await prisma.transaction.findMany({
                 where: {
                   userId,
-                  category: cat.name,
+                  category: {
+                    name: cat.name,
+                  },
                   type: cat.type,
                 },
                 select: {
@@ -784,14 +817,32 @@ export function getAITools(userId: string) {
               userId,
               date: { gte: p1Start, lte: p1End },
             },
-            select: { amount: true, type: true, category: true },
+            select: { 
+              amount: true, 
+              type: true, 
+              category: {
+                select: {
+                  name: true,
+                  icon: true,
+                },
+              },
+            },
           }),
           prisma.transaction.findMany({
             where: {
               userId,
               date: { gte: p2Start, lte: p2End },
             },
-            select: { amount: true, type: true, category: true },
+            select: { 
+              amount: true, 
+              type: true, 
+              category: {
+                select: {
+                  name: true,
+                  icon: true,
+                },
+              },
+            },
           }),
         ]);
 
@@ -817,14 +868,14 @@ export function getAITools(userId: string) {
           const p1Categories = period1Transactions
             .filter(t => t.type === "expense")
             .reduce((acc, t) => {
-              acc[t.category] = (acc[t.category] || 0) + t.amount;
+              acc[t.category.name] = (acc[t.category.name] || 0) + t.amount;
               return acc;
             }, {} as Record<string, number>);
 
           const p2Categories = period2Transactions
             .filter(t => t.type === "expense")
             .reduce((acc, t) => {
-              acc[t.category] = (acc[t.category] || 0) + t.amount;
+              acc[t.category.name] = (acc[t.category.name] || 0) + t.amount;
               return acc;
             }, {} as Record<string, number>);
 

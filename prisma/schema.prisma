@@ -25,12 +25,15 @@ model UserSettings {
 }
 
 model Category {
-  createdAt DateTime @default(now())
-  name      String
-  userId    String
-  icon      String
-  type      String   @default("income")
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  name        String
+  userId      String
+  icon        String
+  type        String   @default("income")
   description String?
+
+  transactions Transaction[]
 
   @@unique([name, userId, type])
 }
@@ -46,8 +49,10 @@ model Transaction {
   userId      String
   type        String   @default("income")
 
-  category     String
-  categoryIcon String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
 }
 
 model MonthHistory {

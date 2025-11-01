@@ -32,7 +32,7 @@ export type GetCategoriesStatsResponseType = Awaited<
 
 async function getCategoriesStats(userId: string, from: Date, to: Date) {
   const stats = await prisma.transaction.groupBy({
-    by: ["type", "category", "categoryIcon"],
+    by: ["type", "categoryId"],
     where: {
       userId,
       date: {
@@ -50,5 +50,24 @@ async function getCategoriesStats(userId: string, from: Date, to: Date) {
     },
   });
 
-  return stats;
+  const categoryIds = Array.from(new Set(stats.map(s => s.categoryId)));
+  const categories = await prisma.category.findMany({
+    where: {
+      id: {
+        in: categoryIds,
+      },
+    },
+  });
+
+  const categoryMap = new Map(categories.map(c => [c.id, c]));
+
+  return stats.map(stat => {
+    const category = categoryMap.get(stat.categoryId);
+    return {
+      type: stat.type,
+      category: category?.name || 'Unknown',
+      categoryIcon: category?.icon || '❓',
+      _sum: stat._sum,
+    };
+  });
 }

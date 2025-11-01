@@ -61,11 +61,15 @@ async function getTransactionsHistory(userId: string, from: Date, to: Date) {
     orderBy: {
       date: "desc",
     },
+    include: {
+      category: true,
+    },
   });
+
+  console.log(transactions);
 
   return transactions.map((transaction) => ({
     ...transaction,
-    // lets format the amount with the user currency
     formattedAmount: formatter.format(transaction.amount),
   }));
 }

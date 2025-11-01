@@ -31,10 +31,7 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
     throw new Error("category not found");
   }
 
-  // NOTE: don't make confusion between $transaction ( prisma ) and prisma.transaction (table)
-
   await prisma.$transaction([
-    // Create user transaction
     prisma.transaction.create({
       data: {
         userId: user.id,
@@ -42,12 +39,10 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
         date,
         description: description || "",
         type,
-        category: categoryRow.name,
-        categoryIcon: categoryRow.icon,
+        categoryId: categoryRow.id,
       },
     }),
 
-    // Update month aggregate table
     prisma.monthHistory.upsert({
       where: {
         day_month_year_userId: {
@@ -75,7 +70,6 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
       },
     }),
 
-    // Update year aggreate
     prisma.yearHistory.upsert({
       where: {
         month_year_userId: {
