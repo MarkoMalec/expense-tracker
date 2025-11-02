@@ -93,7 +93,7 @@ function SpendingTrendChart({ userSettings }: Props) {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>6-Month Spending Trend</span>
-            <div className="flex gap-4 text-sm font-normal">
+            <div className="flex flex-col gap-4 text-sm font-normal sm:flex-row">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-emerald-500" />
                 <span className="text-muted-foreground">

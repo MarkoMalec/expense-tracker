@@ -8,7 +8,6 @@ import {
 } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Bot,
   X,
   Send,
   Sparkles,
@@ -97,7 +96,10 @@ function AgentActivityBar({
 }) {
   const steps = [
     { key: "planning", label: "Planning" },
-    { key: "tool", label: toolName ? `Calling ${formatToolName(toolName)}` : "Tools" },
+    {
+      key: "tool",
+      label: toolName ? `Calling ${formatToolName(toolName)}` : "Tools",
+    },
     { key: "drafting", label: "Composing" },
     { key: "finalizing", label: "Finalizing" },
   ] as const;
@@ -115,7 +117,11 @@ function AgentActivityBar({
           <span>Ready</span>
         ) : (
           <span className="flex items-center gap-1">
-            {phase === "tool" ? <Wrench className="h-3 w-3" /> : <Loader2 className="h-3 w-3 animate-spin" />}
+            {phase === "tool" ? (
+              <Wrench className="h-3 w-3" />
+            ) : (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            )}
             {steps[Math.max(0, activeIndex)].label}
           </span>
         )}
@@ -123,15 +129,20 @@ function AgentActivityBar({
 
       <div className="mt-2 flex items-center gap-2">
         {steps.map((s, i) => (
-          <div key={s.key} className="flex items-center gap-2">
+          <div key={s.key} className="flex w-1/4 items-center gap-2">
             <div
               className={cn(
-                "h-1.5 w-20 rounded-full bg-muted-foreground/20",
-                i <= activeIndex && "bg-primary/70",
+                "h-1.5 w-full rounded-full bg-muted-foreground/20",
+                i <= activeIndex && "bg-primary/70"
               )}
             />
             {i < steps.length - 1 && (
-              <Ellipsis className={cn("h-3 w-3 text-muted-foreground", i < activeIndex && "text-primary/70")} />
+              <Ellipsis
+                className={cn(
+                  "h-3 w-3 text-muted-foreground",
+                  i < activeIndex && "text-primary/70"
+                )}
+              />
             )}
           </div>
         ))}
@@ -153,7 +164,9 @@ export default function AIChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTool, setCurrentTool] = useState<string | null>(null);
   const [messageTools, setMessageTools] = useState<Record<string, string>>({});
-  const [messageTimestamps, setMessageTimestamps] = useState<Record<string, number>>({});
+  const [messageTimestamps, setMessageTimestamps] = useState<
+    Record<string, number>
+  >({});
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollParentRef = useRef<HTMLDivElement>(null);
@@ -189,7 +202,10 @@ export default function AIChat() {
         setMessageTools(parsedTools);
       }
       if (storedTimestamps) {
-        const parsedTimestamps = JSON.parse(storedTimestamps) as Record<string, number>;
+        const parsedTimestamps = JSON.parse(storedTimestamps) as Record<
+          string,
+          number
+        >;
         setMessageTimestamps(parsedTimestamps);
       }
     } catch {}
@@ -209,13 +225,19 @@ export default function AIChat() {
 
   useEffect(() => {
     if (Object.keys(messageTimestamps).length) {
-      localStorage.setItem(CHAT_TIMESTAMPS_KEY, JSON.stringify(messageTimestamps));
+      localStorage.setItem(
+        CHAT_TIMESTAMPS_KEY,
+        JSON.stringify(messageTimestamps)
+      );
     }
   }, [messageTimestamps]);
 
   // ---------- Scroll mgmt ----------
   const scrollToBottom = () =>
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
 
   useEffect(() => {
     scrollToBottom();
@@ -313,16 +335,19 @@ export default function AIChat() {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex w-full flex-col border-0 bg-background transition-all duration-300 md:inset-auto md:bottom-20 md:left-6 md:h-[900px] md:max-w-[720px] md:rounded-2xl md:border md:shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-blue-500/10 to-purple-600/10 px-4 py-3 md:rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-                <Sparkles className="h-4.5 w-4.5 text-white" />
+          <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-blue-500/10 to-purple-600/10 px-3 py-3 md:px-4 md:rounded-t-2xl">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              <div className="relative flex h-8 w-8 md:h-9 md:w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                <Sparkles className="h-4 w-4 md:h-4.5 md:w-4.5 text-white" />
                 {status !== "ready" && (
                   <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
@@ -330,45 +355,67 @@ export default function AIChat() {
                   </span>
                 )}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold">AI Assistant</h3>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-semibold whitespace-nowrap">AI Assistant</h3>
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]",
+                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] whitespace-nowrap",
                       status === "ready"
                         ? "bg-emerald-500/10 text-emerald-600"
-                        : "bg-amber-500/10 text-amber-600",
+                        : "bg-amber-500/10 text-amber-600"
                     )}
                   >
-                    <span className={cn("h-1.5 w-1.5 rounded-full", status === "ready" ? "bg-emerald-500" : "bg-amber-500")} />
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full shrink-0",
+                        status === "ready" ? "bg-emerald-500" : "bg-amber-500"
+                      )}
+                    />
                     {status === "ready" ? "Online" : "Working"}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {status === "ready" ? "Ask me anything about your expenses" : "Analyzing request"}
+                <p className="text-xs text-muted-foreground truncate hidden md:block">
+                  {status === "ready"
+                    ? "Ask me anything about your expenses"
+                    : "Analyzing request"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
               {messages.length > 0 && (
-                <button onClick={exportJSON} className="rounded-full p-1 hover:bg-accent" title="Export JSON">
+                <button
+                  onClick={exportJSON}
+                  className="rounded-full p-1 hover:bg-accent hidden md:block"
+                  title="Export JSON"
+                >
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               )}
               {messages.length > 0 && (
-                <button onClick={handleClearHistory} className="rounded-full p-1 hover:bg-accent" title="Clear chat">
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                <button
+                  onClick={handleClearHistory}
+                  className="rounded-full p-1 hover:bg-accent"
+                  title="Clear chat"
+                >
+                  <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
                 </button>
               )}
-              <button onClick={() => setIsOpen(false)} className="rounded-full p-1 hover:bg-accent" title="Close">
-                <X className="h-5 w-5" />
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-1 hover:bg-accent"
+                title="Close"
+              >
+                <X className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div ref={scrollParentRef} className="relative flex-1 overflow-y-auto p-4">
+          <div
+            ref={scrollParentRef}
+            className="relative flex-1 overflow-y-auto p-4"
+          >
             {/* Empty state */}
             {messages.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center gap-2 py-12 text-center">
@@ -376,107 +423,108 @@ export default function AIChat() {
                   <Sparkles className="h-7 w-7 text-blue-500" />
                 </div>
                 <p className="text-sm font-medium">How can I help you today?</p>
-                <p className="text-xs text-muted-foreground">Classic AI chat vibes. Try: "What did I spend on groceries last month?"</p>
+                <p className="text-xs text-muted-foreground">
+                  Classic AI chat vibes. Try: "What did I spend on groceries
+                  last month?"
+                </p>
               </div>
             )}
 
             {/* Day dividers + messages */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {messages.map((message, idx) => {
-                const created = new Date(messageTimestamps[message.id] ?? Date.now());
+                const created = new Date(
+                  messageTimestamps[message.id] ?? Date.now()
+                );
                 const prev = messages[idx - 1];
                 const showDivider = (() => {
-                  const prevDate = prev ? new Date(messageTimestamps[prev.id] ?? Date.now()) : null;
-                  return !prevDate || prevDate.toDateString() !== created.toDateString();
+                  const prevDate = prev
+                    ? new Date(messageTimestamps[prev.id] ?? Date.now())
+                    : null;
+                  return (
+                    !prevDate ||
+                    prevDate.toDateString() !== created.toDateString()
+                  );
                 })();
 
                 return (
                   <div key={message.id}>
-                    {showDivider && <DayDivider label={dayLabels[created.toDateString()] ?? ""} />}
+                    {showDivider && (
+                      <DayDivider
+                        label={dayLabels[created.toDateString()] ?? ""}
+                      />
+                    )}
 
-                    <div className={cn("flex gap-2 md:gap-3", message.role === "user" ? "flex-row-reverse" : "flex-row")}> 
-                      {/* Avatar */}
-                      <div
-                        className={cn(
-                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-gradient-to-br from-blue-500 to-purple-600 text-white",
-                        )}
-                        title={message.role === "user" ? "You" : "Assistant"}
-                      >
-                        {message.role === "user" ? (
-                          <span className="text-[10px] font-semibold">You</span>
-                        ) : (
-                          <Bot className="h-4 w-4" />
-                        )}
+                    {/* Message with header */}
+                    <div className="group relative">
+                      {/* Message Header */}
+                      <div className="mb-3 flex items-center justify-between gap-2 pb-2 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+                          <span
+                            className={cn(
+                              "text-sm font-semibold shrink-0",
+                              message.role === "user"
+                                ? "text-primary"
+                                : "bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
+                            )}
+                          >
+                            {message.role === "user" ? "You" : "AI Assistant"}
+                          </span>
+                          {message.role === "assistant" && idx === messages.length - 1 && currentTool && status !== "ready" && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+                              Using <ToolChip name={currentTool} />
+                            </span>
+                          )}
+                          {message.role === "assistant" &&
+                            messageTools[message.id] && 
+                            !(idx === messages.length - 1 && currentTool && status !== "ready") && (
+                              <ToolChip name={messageTools[message.id]} />
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatTime(created)}
+                          </span>
+                          {message.role === "assistant" && (
+                            <CopyButton
+                              text={message.parts
+                                .map((p) => (p.type === "text" ? p.text : ""))
+                                .join("\n")}
+                            />
+                          )}
+                        </div>
                       </div>
 
-                      {/* Bubble */}
-                      <div
-                        className={cn(
-                          "group relative max-w-[78%] rounded-2xl px-4 py-3",
-                          message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
-                        )}
-                      >
-                        {/* Content */}
-                        <div className="assistant-msg prose prose-sm dark:prose-invert prose-pre:overflow-x-auto prose-pre:bg-background/70">
+                      {/* Message Content */}
+                      {message.role === "assistant" ? (
+                        <div className="assistant-msg rounded-lg bg-muted/30 px-4 py-3 prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-p:my-2 prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-pre:overflow-x-auto prose-pre:bg-background/50 prose-pre:border prose-pre:border-border prose-code:text-xs prose-strong:font-semibold prose-a:text-blue-500 hover:prose-a:text-blue-600">
                           {message.parts.map((part, i) => (
                             <div key={i}>
                               {part.type === "text" && (
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.text}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                  {part.text}
+                                </ReactMarkdown>
                               )}
                             </div>
                           ))}
                         </div>
-
-                        {/* Meta */}
-                        <div className={cn("mt-2 flex items-center gap-2 text-[10px]", message.role === "user" ? "text-primary-foreground/80" : "text-muted-foreground")}> 
-                          <span>{formatTime(created)}</span>
-                          {message.role === "assistant" && (
-                            <>
-                              {messageTools[message.id] && <ToolChip name={messageTools[message.id]} />}
-                              {/* Copy */}
-                              <CopyButton
-                                text={message.parts
-                                  .map((p) => (p.type === "text" ? p.text : ""))
-                                  .join("\n")}
-                              />
-                            </>
-                          )}
+                      ) : (
+                        <div className="rounded-lg text-right bg-primary/5 px-4 py-3 prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-p:my-2 prose-pre:my-3 prose-pre:overflow-x-auto prose-pre:bg-background/50 prose-pre:border prose-pre:border-border">
+                          {message.parts.map((part, i) => (
+                            <div key={i}>
+                              {part.type === "text" && (
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                  {part.text}
+                                </ReactMarkdown>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
-
-              {/* Live thinking / tool indicator block */}
-              {(status === "submitted" || status === "streaming" || currentTool) && (
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                    <Bot className="h-4 w-4" />
-                  </div>
-                  <div className="max-w-[78%] rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-                    {currentTool ? (
-                      <div className="flex items-center gap-2">
-                        <Wrench className="h-4 w-4 animate-pulse" />
-                        <span>Using {formatToolName(currentTool)}…</span>
-                      </div>
-                    ) : status === "submitted" ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Planning <TypingDots /></span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Composing <TypingDots /></span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Anchor */}
               <div ref={messagesEndRef} />
@@ -524,11 +572,15 @@ export default function AIChat() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 left-6 z-50 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg transition-all duration-300 hover:scale-110 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50",
-          isOpen && "hidden md:flex",
+          isOpen && "hidden md:flex"
         )}
         aria-label="Toggle AI Chat"
       >
-        {isOpen ? <X className="h-5 w-5 text-white" /> : <Bot className="h-10 w-10 text-white" />}
+        {isOpen ? (
+          <X className="h-5 w-5 text-white" />
+        ) : (
+          <Sparkles className="h-6 w-6 text-white" />
+        )}
       </button>
     </>
   );
