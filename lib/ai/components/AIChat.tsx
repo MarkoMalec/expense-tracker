@@ -33,9 +33,6 @@ const formatToolName = (toolName: string) =>
     .replace(/^./, (str) => str.toUpperCase())
     .trim();
 
-const CHAT_HISTORY_KEY = "ai-chat-history";
-const CHAT_TOOLS_KEY = "ai-chat-tools";
-const CHAT_TIMESTAMPS_KEY = "ai-chat-timestamps";
 const CHAT_ID = "expense-tracker-chat";
 
 // Basic pretty timestamp
@@ -172,55 +169,73 @@ export default function AIChat() {
   });
 
   // ---------- Persistence ----------
+  // Load chat history from database on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = localStorage.getItem(CHAT_HISTORY_KEY);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored) as UIMessage[];
-      if (parsed?.length) setMessages(parsed);
-    } catch {}
+    const loadHistory = async () => {
+      try {
+        const response = await fetch("/api/ai/history");
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        if (!data.messages || data.messages.length === 0) return;
+
+        // Convert database format back to UIMessage format
+        const uiMessages: UIMessage[] = data.messages.map((msg: any) => ({
+          id: msg.messageId,
+          role: msg.role,
+          parts: [{ type: "text", text: msg.content }],
+        }));
+
+        const tools: Record<string, string> = {};
+        const timestamps: Record<string, number> = {};
+
+        data.messages.forEach((msg: any) => {
+          if (msg.toolName) {
+            tools[msg.messageId] = msg.toolName;
+          }
+          timestamps[msg.messageId] = new Date(msg.timestamp).getTime();
+        });
+
+        setMessages(uiMessages);
+        setMessageTools(tools);
+        setMessageTimestamps(timestamps);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    loadHistory();
   }, [setMessages]);
 
+  // Save chat history to database whenever messages, tools, or timestamps change
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const storedTools = localStorage.getItem(CHAT_TOOLS_KEY);
-    const storedTimestamps = localStorage.getItem(CHAT_TIMESTAMPS_KEY);
-    try {
-      if (storedTools) {
-        const parsedTools = JSON.parse(storedTools) as Record<string, string>;
-        setMessageTools(parsedTools);
+    if (messages.length === 0) return;
+
+    // Debounce saves to avoid too many API calls
+    const timeoutId = setTimeout(async () => {
+      try {
+        const dbMessages = messages.map((msg) => ({
+          messageId: msg.id,
+          role: msg.role,
+          content: msg.parts
+            .map((p) => (p.type === "text" ? p.text : ""))
+            .join("\n"),
+          toolName: messageTools[msg.id] || null,
+          timestamp: messageTimestamps[msg.id] || Date.now(),
+        }));
+
+        await fetch("/api/ai/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: dbMessages }),
+        });
+      } catch (error) {
+        console.error("Failed to save chat history:", error);
       }
-      if (storedTimestamps) {
-        const parsedTimestamps = JSON.parse(storedTimestamps) as Record<
-          string,
-          number
-        >;
-        setMessageTimestamps(parsedTimestamps);
-      }
-    } catch {}
-  }, []);
+    }, 500); // Wait 500ms before saving
 
-  useEffect(() => {
-    if (messages.length) {
-      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (Object.keys(messageTools).length) {
-      localStorage.setItem(CHAT_TOOLS_KEY, JSON.stringify(messageTools));
-    }
-  }, [messageTools]);
-
-  useEffect(() => {
-    if (Object.keys(messageTimestamps).length) {
-      localStorage.setItem(
-        CHAT_TIMESTAMPS_KEY,
-        JSON.stringify(messageTimestamps)
-      );
-    }
-  }, [messageTimestamps]);
+    return () => clearTimeout(timeoutId);
+  }, [messages, messageTools, messageTimestamps]);
 
   // ---------- Scroll mgmt ----------
   const scrollToBottom = () =>
@@ -299,14 +314,17 @@ export default function AIChat() {
     setInput("");
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (!confirm("Clear the chat history?")) return;
-    setMessages([]);
-    setMessageTools({});
-    setMessageTimestamps({});
-    localStorage.removeItem(CHAT_HISTORY_KEY);
-    localStorage.removeItem(CHAT_TOOLS_KEY);
-    localStorage.removeItem(CHAT_TIMESTAMPS_KEY);
+    
+    try {
+      await fetch("/api/ai/history", { method: "DELETE" });
+      setMessages([]);
+      setMessageTools({});
+      setMessageTimestamps({});
+    } catch (error) {
+      console.error("Failed to clear chat history:", error);
+    }
   };
 
   const exportJSON = () => {

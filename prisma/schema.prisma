@@ -75,3 +75,17 @@ model YearHistory {
 
   @@id([month, year, userId])
 }
+
+model AIChatMessage {
+  id          String   @id @default(uuid())
+  userId      String
+  messageId   String   // The message ID from the AI SDK
+  role        String   // "user" or "assistant"
+  content     String   @db.Text // JSON stringified message parts
+  toolName    String?  // Name of the tool used (if assistant message)
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@unique([userId, messageId])
+}
