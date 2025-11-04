@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,15 +43,6 @@ const formatTime = (date: Date) =>
   date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 // ---------- Components ----------
-function TypingDots() {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:-.2s]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce" />
-      <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:.2s]" />
-    </span>
-  );
-}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -459,7 +449,7 @@ export default function AIChat() {
                     <div className="group relative">
                       {/* Message Header */}
                       <div className="mb-3 flex items-center justify-between gap-2 pb-2 min-w-0">
-                        <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+                        <div className="flex items-center gap-2 min-w-0 flex-wrap">
                           <span
                             className={cn(
                               "text-sm font-semibold shrink-0",
@@ -481,6 +471,7 @@ export default function AIChat() {
                               <ToolChip name={messageTools[message.id]} />
                             )}
                         </div>
+                        <div className="border-b border-dashed h-2 flex-1 mx-4" />
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-xs text-muted-foreground whitespace-nowrap">
                             {formatTime(created)}
@@ -509,7 +500,7 @@ export default function AIChat() {
                           ))}
                         </div>
                       ) : (
-                        <div className="rounded-lg text-right bg-primary/5 px-4 py-3 prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-p:my-2 prose-pre:my-3 prose-pre:overflow-x-auto prose-pre:bg-background/50 prose-pre:border prose-pre:border-border">
+                        <div className="user-msg rounded-lg text-right bg-primary/5 px-4 py-3 prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-p:my-2 prose-pre:my-3 prose-pre:overflow-x-auto prose-pre:bg-background/50 prose-pre:border prose-pre:border-border">
                           {message.parts.map((part, i) => (
                             <div key={i}>
                               {part.type === "text" && (

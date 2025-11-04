@@ -75,12 +75,22 @@
     }
   }
 
+  .assistant-msg, .user-msg {
+    font-size: 0.875rem;
+  }
+
   .assistant-msg p {
     margin-bottom: 16px;
   }
 
   .assistant-msg p:last-child {
     margin-bottom: 0;
+  }
+
+  .assistant-msg h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 2.5;
   }
 
   .assistant-msg ol, .assistant-msg ul {
