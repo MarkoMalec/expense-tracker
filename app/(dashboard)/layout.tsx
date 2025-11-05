@@ -7,7 +7,7 @@ function layout({ children }: { children: ReactNode }) {
     <>
       <div className="flex w-full flex-col">
         <Navbar />
-        <div className="w-full">{children}</div>
+        <div className="w-full pb-24">{children}</div>
         <AIChat />
       </div>
     </>

@@ -89,3 +89,11 @@ model AIChatMessage {
   @@index([userId, timestamp])
   @@unique([userId, messageId])
 }
+
+model DashboardLayout {
+  userId      String   @id
+  cardOrder   String   @db.Text // JSON array of card IDs in order
+  collapsed   String   @db.Text // JSON array of collapsed card IDs
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}

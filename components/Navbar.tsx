@@ -29,11 +29,11 @@ function MobileNavbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="block border-separate bg-background md:hidden">
-      <nav className="container flex items-center justify-between">
+    <div className="block border-b border-border/50 bg-background/95 shadow-sm backdrop-blur md:hidden">
+      <nav className="container flex h-14 items-center justify-between gap-3">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button variant={"ghost"} size={"icon"}>
+            <Button variant={"ghost"} size={"icon"} className="rounded-full">
               <Menu />
             </Button>
           </SheetTrigger>
@@ -51,7 +51,7 @@ function MobileNavbar() {
             </div>
           </SheetContent>
         </Sheet>
-        <div className="flex h-[80px] min-h-[60px] items-center gap-x-4">
+        <div className="flex h-full min-h-[56px] items-center">
           <LogoMobile />
         </div>
         <div className="flex items-center gap-2">
@@ -65,11 +65,11 @@ function MobileNavbar() {
 
 function DesktopNavbar() {
   return (
-    <div className="hidden border-separate border-b bg-background md:block">
-      <nav className="container flex items-center justify-between px-8">
-        <div className="flex h-[80px] min-h-[60px] items-center gap-x-4">
+    <div className="hidden border-b border-border/50 bg-background/95 shadow-sm backdrop-blur md:block">
+      <nav className="container flex h-16 items-center justify-between px-6">
+        <div className="flex h-full items-center gap-x-5">
           <Logo />
-          <div className="flex h-full">
+          <div className="flex h-full items-center gap-x-1">
             {items.map((item) => (
               <NavbarItem
                 key={item.label}
@@ -105,9 +105,11 @@ function NavbarItem({
       <Link
         href={link}
         className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "w-full justify-start text-lg text-muted-foreground hover:text-foreground",
-          isActive && "text-foreground"
+          buttonVariants({ variant: "ghost", size: "sm" }),
+          "h-auto w-full justify-start rounded-full px-4 py-1.5 text-sm font-semibold text-muted-foreground transition-all md:w-auto md:justify-center",
+          isActive
+            ? "bg-accent/40 text-foreground shadow-sm hover:bg-accent/50"
+            : "hover:bg-muted/60 hover:text-foreground"
         )}
         onClick={() => {
           if (clickCallback) clickCallback();
@@ -116,7 +118,7 @@ function NavbarItem({
         {label}
       </Link>
       {isActive && (
-        <div className="absolute -bottom-[2px] left-1/2 hidden h-[2px] w-[80%] -translate-x-1/2 rounded-xl bg-foreground md:block" />
+        <div className="absolute -bottom-2 left-1/2 hidden h-[3px] w-10 -translate-x-1/2 rounded-full bg-primary transition-all duration-200 md:block" />
       )}
     </div>
   );
