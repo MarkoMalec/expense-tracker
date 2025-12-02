@@ -1,4 +1,5 @@
 import CreateTransactionDialog from "@/app/(dashboard)/_components/CreateTransactionDialog";
+import ImportTransactionsDialog from "@/app/(dashboard)/_components/ImportTransactionsDialog";
 import History from "@/app/(dashboard)/_components/History";
 import Overview from "@/app/(dashboard)/_components/Overview";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,17 @@ async function page() {
           <div className="flex items-center gap-3 flex-wrap">
             {/* <InitialBalanceDialog userSettings={userSettings} /> */}
             {/* <BillingCycleDialog userSettings={userSettings} /> */}
+            
+            <ImportTransactionsDialog
+              trigger={
+                <Button
+                  variant={"outline"}
+                  className="border-blue-500 bg-blue-950 text-white hover:bg-blue-700 hover:text-white"
+                >
+                  Import CSV/XLS 📊
+                </Button>
+              }
+            />
             
             <CreateTransactionDialog
               trigger={
