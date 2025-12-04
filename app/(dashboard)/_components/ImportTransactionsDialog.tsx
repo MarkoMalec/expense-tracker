@@ -66,13 +66,12 @@ function ImportTransactionsDialog({ trigger }: Props) {
       toast.success(
         `Successfully imported ${result.imported} transaction(s)! ${
           result.skipped > 0 ? `Skipped ${result.skipped} invalid row(s).` : ""
-        }`,
-        { id: toastId }
+        }${result.imported > 0 ? "\n\nTip: Use the date picker to view transactions from different months." : ""}`,
+        { id: toastId, duration: 5000 }
       );
 
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["overview"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      // Invalidate all queries to refresh data
+      queryClient.invalidateQueries(); // Invalidate all queries to ensure everything updates
 
       setFile(null);
       setOpen(false);

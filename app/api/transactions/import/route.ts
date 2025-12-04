@@ -367,17 +367,85 @@ export async function POST(request: NextRequest) {
         // Get or create category
         const categoryId = await getOrCreateCategory(user.id, description, type);
 
-        // Create transaction
-        await prisma.transaction.create({
-          data: {
-            userId: user.id,
-            amount,
-            description,
-            date,
-            type,
-            categoryId,
-          },
+        // Log what we're about to save
+        console.log("Importing transaction:", {
+          date: date.toISOString(),
+          utcDate: date.getUTCDate(),
+          utcMonth: date.getUTCMonth(),
+          utcYear: date.getUTCFullYear(),
+          amount,
+          type,
+          description: description.substring(0, 30)
         });
+
+        // Create transaction and update history in a transaction
+        await prisma.$transaction([
+          // Create the transaction
+          prisma.transaction.create({
+            data: {
+              userId: user.id,
+              amount,
+              description,
+              date,
+              type,
+              categoryId,
+            },
+          }),
+
+          // Update month history
+          prisma.monthHistory.upsert({
+            where: {
+              day_month_year_userId: {
+                userId: user.id,
+                day: date.getUTCDate(),
+                month: date.getUTCMonth(),
+                year: date.getUTCFullYear(),
+              },
+            },
+            create: {
+              userId: user.id,
+              day: date.getUTCDate(),
+              month: date.getUTCMonth(),
+              year: date.getUTCFullYear(),
+              expense: type === "expense" ? amount : 0,
+              income: type === "income" ? amount : 0,
+            },
+            update: {
+              expense: {
+                increment: type === "expense" ? amount : 0,
+              },
+              income: {
+                increment: type === "income" ? amount : 0,
+              },
+            },
+          }),
+
+          // Update year history
+          prisma.yearHistory.upsert({
+            where: {
+              month_year_userId: {
+                userId: user.id,
+                month: date.getUTCMonth(),
+                year: date.getUTCFullYear(),
+              },
+            },
+            create: {
+              userId: user.id,
+              month: date.getUTCMonth(),
+              year: date.getUTCFullYear(),
+              expense: type === "expense" ? amount : 0,
+              income: type === "income" ? amount : 0,
+            },
+            update: {
+              expense: {
+                increment: type === "expense" ? amount : 0,
+              },
+              income: {
+                increment: type === "income" ? amount : 0,
+              },
+            },
+          }),
+        ]);
 
         imported++;
       } catch (error) {
